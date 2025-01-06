@@ -10,6 +10,7 @@ import MainLayout from '@/features/main-layout/components/MainLayout';
 import SessionManagement from '@/features/session-management/components/SessionManagement';
 import PasswordChange from '@/features/password-change/components/PasswordChange';
 import { Navigate, Outlet } from 'react-router-dom';
+import { OauthCallback } from '@/features/login/components/OauthCallback';
 
 const routes = (isLoggedIn: boolean) => [
   {
@@ -77,6 +78,10 @@ const routes = (isLoggedIn: boolean) => [
       {
         path: 'password-change',
         element: <PasswordChange />,
+      },
+      {
+        path: 'oauth/callback',
+        element: <OauthCallback />,
       },
       {
         index: true,

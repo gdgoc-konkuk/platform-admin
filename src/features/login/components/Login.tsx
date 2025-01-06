@@ -66,6 +66,11 @@ export default function Login() {
       </div>
       <div className="flex w-2/5 flex-col items-center justify-between bg-background py-[53px]">
         <div className="w-1"></div>
+        <a href="https://api.gdsc-konkuk.dev/login/oauth2/authorization/google">
+          <Button className="w-[400px] h-[50px] text-[17px] font-semibold bg-[#EA4335] hover:bg-[#D93025]">
+            구글로 로그인
+          </Button>
+        </a>
         <form
           className="w-[400px] flex flex-col"
           onSubmit={handleSubmit(onSubmit)}

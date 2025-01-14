@@ -6,13 +6,13 @@ import Login from '@/features/login/components/Login';
 import CreateMail from '@/features/mail-management/components/create-mail/CreateMail';
 import EditMail from '@/features/mail-management/components/create-mail/EditMail';
 import MailManagement from '@/features/mail-management/components/MailManagement';
-import MainLayout from '@/features/main-layout/components/MainLayout';
 import SessionManagement from '@/features/session-management/components/SessionManagement';
-import PasswordChange from '@/features/password-change/components/PasswordChange';
 import { Navigate, Outlet } from 'react-router-dom';
 import { OauthCallback } from '@/features/login/components/OauthCallback';
+import { PrivateRoute } from './PrivateRoute';
+import { PublicRoute } from './PuyblicRoute';
 
-const routes = (isLoggedIn: boolean) => [
+const routes = () => [
   {
     path: '/attendance-return',
     element: <Outlet />,
@@ -29,7 +29,7 @@ const routes = (isLoggedIn: boolean) => [
   },
   {
     path: '/app',
-    element: isLoggedIn ? <MainLayout /> : <Navigate to="/login" />,
+    element: <PrivateRoute />,
     children: [
       {
         index: true,
@@ -69,15 +69,11 @@ const routes = (isLoggedIn: boolean) => [
   },
   {
     path: '/',
-    element: !isLoggedIn ? <Outlet /> : <Navigate to="/app" />,
+    element: <PublicRoute />,
     children: [
       {
         path: 'login',
         element: <Login />,
-      },
-      {
-        path: 'password-change',
-        element: <PasswordChange />,
       },
       {
         path: 'oauth/callback',

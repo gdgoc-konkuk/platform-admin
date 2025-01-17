@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 import dayjs from 'dayjs';
-import { EventData } from './Attendance';
 
 import QRCode from './LogoQRcode';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -14,9 +13,9 @@ import {
 import ErrorPopup from '@/components/ui/ErrorPopup';
 
 interface QRModalProps {
+  title: string;
   selectedDate: dayjs.Dayjs;
   closeSecondModal: () => void;
-  selectedEvent: EventData;
   attendanceId: number;
   attendUrl: string;
   refetch: () => void;
@@ -28,9 +27,9 @@ interface IAttendancesStatus {
 }
 
 export const QRModal: React.FC<QRModalProps> = ({
+  title,
   selectedDate,
   closeSecondModal,
-  selectedEvent,
   attendanceId,
   attendUrl,
   refetch,
@@ -90,7 +89,7 @@ export const QRModal: React.FC<QRModalProps> = ({
           </div>
           <div className="w-[188px] h-[330px] pt-[54px] flex flex-col justify-start items-center">
             <h1 className="text-[30px] mb-[20px] font-pretendard text-[#171719] font-[700]">
-              {selectedEvent?.title}
+              {title}
             </h1>
             <p className="text-[18px] mb-[50px] font-pretendard text-[#535355] font-[400] leading-[20px] tracking-[0.18px]">
               {selectedDate.format('YYYY.MM.DD')}

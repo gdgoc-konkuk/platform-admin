@@ -9,7 +9,6 @@ import {
   postNewAttendance,
   postReAttendance,
 } from '../apis/attendanceRequest';
-import { EventData } from './Attendance';
 import { useMutation } from '@tanstack/react-query';
 import ErrorPopup from '@/components/ui/ErrorPopup';
 
@@ -19,7 +18,6 @@ interface CreateQRModalProps {
   setTitle: React.Dispatch<React.SetStateAction<string>>;
   numberOfPeople: number;
   setNumberOfPeople: React.Dispatch<React.SetStateAction<number>>;
-  selectedEvent: EventData;
   setAttendUrl: React.Dispatch<React.SetStateAction<string>>;
   setAttendanceId: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -30,7 +28,6 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
   setTitle,
   numberOfPeople,
   setNumberOfPeople,
-  selectedEvent,
   setAttendUrl,
   setAttendanceId,
 }) => {
@@ -65,15 +62,11 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedEvent.attendanceId) {
-      reAttendanceMutation.mutate(selectedEvent.attendanceId);
-    } else {
-      const attendanceData: AttendanceData = {
-        eventId: selectedEvent.eventId,
-        batch: '24-25',
-      };
-      newAttendanceMutation.mutate(attendanceData);
-    }
+    const attendanceData: AttendanceData = {
+      title: title,
+      batch: '24-25',
+    };
+    newAttendanceMutation.mutate(attendanceData);
     closeFirstModalAndOpenSecond();
   };
 
@@ -94,7 +87,6 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
             </label>
             <div className="relative w-full mb-[80px]">
               <Input
-                disabled
                 id="title"
                 className="w-[400px] h-[50px] rounded-[10px] border-[#DADADA] bg-[#F3F3F3] px-[12px] text-[16px] focus:border-[#b1b1b1]"
                 value={title}

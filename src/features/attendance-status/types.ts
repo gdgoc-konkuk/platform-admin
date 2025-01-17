@@ -1,10 +1,9 @@
 export interface AttendanceInfo {
   attendanceId: number;
-  eventId: number;
   memberId: number;
   attendanceDate: string;
   participantId: number;
-  attended: boolean;
+  attendanceType: 'ABSENT' | 'ATTEND' | 'LATE';
 }
 
 export interface Member {

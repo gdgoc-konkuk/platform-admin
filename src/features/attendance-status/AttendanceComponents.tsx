@@ -10,6 +10,7 @@ import {
 
 import CheckedIcon from '/icons/checked.svg';
 import UncheckedIcon from '/icons/unchecked.svg';
+import LateCheckedIcon from '/icons/late-checked.svg';
 
 interface SelectYearMonthProps {
   selectedYear: number;
@@ -103,31 +104,25 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   <div className="flex">
                     {isEditing ? (
                       <div>
-                        <input
-                          type="checkbox"
-                          id={`check+${memberIndex}${attendanceIndex}`}
-                          className="w-[20px] h-[20px] hidden"
-                          checked={attendanceInfo.attended}
-                          onChange={() =>
+                        <img
+                          src={
+                            attendanceInfo.attendanceType === 'ATTEND'
+                              ? CheckedIcon
+                              : attendanceInfo.attendanceType === 'LATE'
+                                ? LateCheckedIcon
+                                : UncheckedIcon
+                          }
+                          className="cursor-pointer"
+                          onClick={() =>
                             handleCheckboxChange(memberIndex, attendanceIndex)
                           }
+                          alt="checkbox"
                         />
-                        <label
-                          htmlFor={`check+${memberIndex}${attendanceIndex}`}
-                          className="block cursor-pointer"
-                        >
-                          <img
-                            src={
-                              attendanceInfo.attended
-                                ? CheckedIcon
-                                : UncheckedIcon
-                            }
-                            alt="checkbox"
-                          />
-                        </label>
                       </div>
-                    ) : attendanceInfo.attended ? (
+                    ) : attendanceInfo.attendanceType === 'ATTEND' ? (
                       <p className="ml-[4px]">o</p>
+                    ) : attendanceInfo.attendanceType === 'LATE' ? (
+                      <p>△</p>
                     ) : (
                       <p className="ml-[4px]">x</p>
                     )}

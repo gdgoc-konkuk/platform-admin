@@ -21,7 +21,10 @@ export const getEvents = async (params: AttendanceData) => {
   }
 };
 export const saveAttendances = async (
-  attendanceUpdateInfoList: { participantId: number; attended: boolean }[], // 서버로 보낼 출석 정보 리스트
+  attendanceUpdateInfoList: {
+    participantId: number;
+    attendanceType: 'ABSENT' | 'ATTEND' | 'LATE';
+  }[], // 서버로 보낼 출석 정보 리스트
   params: AttendanceData, // URL에 추가되는 파라미터
 ) => {
   try {

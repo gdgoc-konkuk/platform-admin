@@ -3,19 +3,16 @@ import dayjs, { Dayjs } from 'dayjs';
 
 import { CreateQRModal } from './CreateQRModal';
 import { QRModal } from './QRModal';
-import { EventData } from './Attendance';
 
 interface ModalManagerProps {
   selectedDate: dayjs.Dayjs;
   setSelectedDate: React.Dispatch<React.SetStateAction<Dayjs | null>>;
-  selectedEvent: EventData;
   refetch: () => void;
 }
 
 export const ModalManager: React.FC<ModalManagerProps> = ({
   selectedDate,
   setSelectedDate,
-  selectedEvent,
   refetch,
 }) => {
   const [isFirstModalOpen, setIsFirstModalOpen] = useState(true);
@@ -45,7 +42,6 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
           setTitle={setTitle}
           numberOfPeople={numberOfPeople}
           setNumberOfPeople={setNumberOfPeople}
-          selectedEvent={selectedEvent}
           setAttendUrl={setAttendUrl}
           setAttendanceId={setAttendanceId}
         />
@@ -53,9 +49,9 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
 
       {isSecondModalOpen && (
         <QRModal
+          title={title}
           selectedDate={selectedDate}
           closeSecondModal={closeSecondModal}
-          selectedEvent={selectedEvent}
           attendanceId={attendanceId}
           attendUrl={attendUrl}
           refetch={refetch}

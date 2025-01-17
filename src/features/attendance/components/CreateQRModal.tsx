@@ -4,11 +4,7 @@ import { Input } from '@/components/ui/input';
 
 import GrayCloseIcon from '/icons/close-gray.svg';
 
-import {
-  AttendanceData,
-  postNewAttendance,
-  postReAttendance,
-} from '../apis/attendanceRequest';
+import { AttendanceData, postNewAttendance } from '../apis/attendanceRequest';
 import { useMutation } from '@tanstack/react-query';
 import ErrorPopup from '@/components/ui/ErrorPopup';
 
@@ -46,18 +42,7 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
       console.error('Error registering attendance:', error);
     },
   });
-  const reAttendanceMutation = useMutation({
-    mutationFn: (data: number) => postReAttendance(data),
-    onSuccess: (data) => {
-      setAttendUrl(data.data.attendUrl);
-      setAttendanceId(data.data.attendanceId);
-      //console.log('Attendance re-registered successfully:', data);
-    },
-    onError: (error: Error) => {
-      setError(error);
-      console.error('Error re-registering attendance:', error);
-    },
-  });
+
   //출석 QR 생성
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

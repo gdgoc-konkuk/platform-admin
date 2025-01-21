@@ -11,6 +11,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { OauthCallback } from '@/features/login/components/OauthCallback';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PuyblicRoute';
+import { MemberInfo } from '@/features/member-info/components/MemberInfo';
 
 const routes = () => [
   {
@@ -42,6 +43,10 @@ const routes = () => [
       {
         path: 'status',
         element: <AttendanceStatus />,
+      },
+      {
+        path: 'info',
+        element: <MemberInfo />,
       },
       {
         path: 'mail',

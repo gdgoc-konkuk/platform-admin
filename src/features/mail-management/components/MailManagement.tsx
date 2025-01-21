@@ -119,7 +119,9 @@ export default function MailManagement() {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <h1 className="font-nanum text-[24px]">메일 전송 관리</h1>
+      <h1 className="font-['NanumSquareRoundEB'] text-[24px] font-extrabold">
+        메일 전송 관리
+      </h1>
 
       <div className="flex gap-4 mt-3 self-end">
         <Link to="/app/mail/create">

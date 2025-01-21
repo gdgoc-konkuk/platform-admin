@@ -24,6 +24,12 @@ const NavData = [
     text: '출석 현황',
   },
   {
+    link: '/app/info',
+    iconBlack: BlackStatusIcon,
+    iconWhite: WhiteStatusIcon,
+    text: '멤버 정보',
+  },
+  {
     link: '/app/mail',
     iconBlack: BlackMailIcon,
     iconWhite: WhiteMailIcon,

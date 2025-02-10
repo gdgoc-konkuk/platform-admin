@@ -18,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getMailList } from '../apis/getMailList';
 import { Mail, MailData } from '../types/mail';
 import { useToast } from '@/components/ui/use-toast';
-import { deleteMail } from '../apis/deleteMail';
+import { deleteMail, deleteSentMail } from '../apis/deleteMail';
 import { translateDate } from '../lib/utils';
 
 export default function MailManagement() {
@@ -48,10 +48,32 @@ export default function MailManagement() {
       });
     },
   });
+  const { mutateAsync: mutateSentMail } = useMutation({
+    mutationFn: (ids: number[]) => deleteSentMail(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mails'] });
+      toast({
+        title: '삭제 완료',
+        description: '해당 메일을 삭제했습니다.',
+      });
+    },
+    onError: () => {
+      toast({
+        variant: 'destructive',
+        title: '삭제 실패',
+        description: '메일 삭제에 실패했습니다. 다시 시도해주세요.',
+      });
+    },
+  });
 
   const onRemove = async () => {
-    const checkedMails = mails.filter((mail) => mail.isChecked);
-    if (checkedMails.length === 0) {
+    const checkedReservedMails = mails.filter(
+      (mail) => mail.isChecked && !mail.isSent,
+    );
+    const checkedSentMails = mails.filter(
+      (mail) => mail.isChecked && mail.isSent,
+    );
+    if (checkedReservedMails.length === 0 && checkedSentMails.length === 0) {
       toast({
         variant: 'destructive',
         title: '삭제 실패',
@@ -60,15 +82,16 @@ export default function MailManagement() {
       return;
     }
 
-    await Promise.all(checkedMails.map((mail) => mutateAsync(mail.id)));
+    await Promise.all(checkedReservedMails.map((mail) => mutateAsync(mail.id)));
+    await mutateSentMail(checkedSentMails.map((mail) => mail.id));
   };
 
   useEffect(() => {
     setMails(
-      data?.data.emailTasks.map((mail: Mail) => {
-        if (mail.isSent) return mail;
-        return { ...mail, isChecked: false };
-      }),
+      data?.data.emailTasks.map((mail: Mail) => ({
+        ...mail,
+        isChecked: false,
+      })),
     );
   }, [data?.data.emailTasks]);
 
@@ -78,7 +101,7 @@ export default function MailManagement() {
       return;
     }
     const isAllChecked = mails.every((mail) => {
-      return mail.isSent || mail.isChecked;
+      return mail.isChecked;
     });
     setIsCheckedAll(isAllChecked);
     if (!isAllChecked) {
@@ -96,7 +119,9 @@ export default function MailManagement() {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <h1 className="font-nanum text-[24px]">메일 전송 관리</h1>
+      <h1 className="font-['NanumSquareRoundEB'] text-[24px] font-extrabold">
+        메일 전송 관리
+      </h1>
 
       <div className="flex gap-4 mt-3 self-end">
         <Link to="/app/mail/create">
@@ -165,32 +190,28 @@ export default function MailManagement() {
                 }}
               >
                 <TableCell>
-                  {mail.isSent ? null : (
-                    <>
-                      <Label htmlFor={`check-${mail.id}`}>
-                        <img
-                          src={mail.isChecked ? CheckedIcon : UncheckedIcon}
-                          alt="check"
-                          className="w-6 h-6 cursor-pointer"
-                        />
-                      </Label>
-                      <Input
-                        id={`check-${mail.id}`}
-                        type="checkbox"
-                        checked={mail.isChecked}
-                        onChange={(e) => {
-                          setMails(
-                            mails.map((m) =>
-                              m.id === mail.id
-                                ? { ...m, isChecked: e.target.checked }
-                                : m,
-                            ),
-                          );
-                        }}
-                        className="hidden"
-                      />
-                    </>
-                  )}
+                  <Label htmlFor={`check-${mail.id}`}>
+                    <img
+                      src={mail.isChecked ? CheckedIcon : UncheckedIcon}
+                      alt="check"
+                      className="w-6 h-6 cursor-pointer"
+                    />
+                  </Label>
+                  <Input
+                    id={`check-${mail.id}`}
+                    type="checkbox"
+                    checked={mail.isChecked}
+                    onChange={(e) => {
+                      setMails(
+                        mails.map((m) =>
+                          m.id === mail.id
+                            ? { ...m, isChecked: e.target.checked }
+                            : m,
+                        ),
+                      );
+                    }}
+                    className="hidden"
+                  />
                 </TableCell>
                 <TableCell>{mail.id}</TableCell>
                 <TableCell>

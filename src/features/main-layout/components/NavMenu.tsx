@@ -7,9 +7,8 @@ import BlackStatusIcon from '/icons/status-black.svg';
 import WhiteStatusIcon from '/icons/status-white.svg';
 import BlackMailIcon from '/icons/mail-black.svg';
 import WhiteMailIcon from '/icons/mail-white.svg';
-import BlackSessionIcon from '/icons/session-black.svg';
-import WhiteSessionIcon from '/icons/session-white.svg';
 import { cn } from '@/lib/utils';
+import { LogOut } from 'lucide-react';
 
 const NavData = [
   {
@@ -25,16 +24,16 @@ const NavData = [
     text: '출석 현황',
   },
   {
+    link: '/app/info',
+    iconBlack: BlackStatusIcon,
+    iconWhite: WhiteStatusIcon,
+    text: '멤버 정보',
+  },
+  {
     link: '/app/mail',
     iconBlack: BlackMailIcon,
     iconWhite: WhiteMailIcon,
     text: '메일 전송 관리',
-  },
-  {
-    link: '/app/session',
-    iconBlack: BlackSessionIcon,
-    iconWhite: WhiteSessionIcon,
-    text: '세션 운영/관리',
   },
 ];
 
@@ -79,6 +78,18 @@ export default function NavMenu() {
         <div className="flex gap-[18px] pl-12">
           <img src={SettingIcon} alt="setting" />
           <span className="text-[17px] font-semibold text-[#9B9B9C]">설정</span>
+        </div>
+        <div
+          className="flex gap-[18px] pl-12 hover:cursor-pointer"
+          onClick={() => {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+          }}
+        >
+          <LogOut size={24} className="text-[#9B9B9C]" />
+          <span className="text-[17px] font-semibold text-[#9B9B9C]">
+            로그아웃
+          </span>
         </div>
       </ul>
     </nav>

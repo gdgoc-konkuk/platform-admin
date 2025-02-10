@@ -1,7 +1,7 @@
 import { instance } from '@/lib/instance';
 
 export interface AttendanceData {
-  eventId: number;
+  title: string;
   batch: string;
 }
 

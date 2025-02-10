@@ -12,14 +12,14 @@ import { ModalManager } from './ModalManager';
 import { useQuery } from '@tanstack/react-query';
 import { getAttendances } from '../apis/attendanceRequest';
 import ErrorPopup from '@/components/ui/ErrorPopup';
+import { cn } from '@/lib/utils';
 
 dayjs.extend(localeData);
 
 export interface EventData {
-  eventId: number;
   attendanceId: number | null;
   title: string | null;
-  startAt: string;
+  attendanceTime: string;
 }
 
 type ResponseData = {
@@ -29,10 +29,8 @@ type ResponseData = {
 };
 
 export default function Attendance() {
-  const event = { eventId: 0, attendanceId: null, title: '', startAt: '' };
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventData>(event);
   const [selectedYear, setSelectedYear] = useState(currentDate.year());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.month());
 
@@ -48,13 +46,8 @@ export default function Attendance() {
   }
 
   const handleDateClick = (date: dayjs.Dayjs) => {
-    data?.data.forEach((event: EventData) => {
-      const eventDate = dayjs(event.startAt).format('YYYY-MM-DD');
-      if (eventDate === date.format('YYYY-MM-DD')) {
-        setSelectedDate(date);
-        setSelectedEvent(event);
-      }
-    });
+    if (date.format('YYYY-MM-DD') !== dayjs().format('YYYY-MM-DD')) return;
+    setSelectedDate(date);
   };
 
   const handleYearChange = (value: string) => {
@@ -128,7 +121,10 @@ export default function Attendance() {
               {Array.from({ length: daysInMonth }, (_, i) => (
                 <div
                   key={'day' + i}
-                  className="w-[105px] h-[78px] px-[16px] py-[10px] rounded-[10px] cursor-pointer bg-[#F9F9F9] hover:bg-gray-200 transition duration-300"
+                  className={cn(
+                    'w-[105px] h-[78px] px-[16px] py-[10px] rounded-[10px] cursor-pointer bg-[#F9F9F9] hover:bg-gray-200 transition duration-300',
+                    i === currentDate.date() - 1 && 'bg-gray-300',
+                  )}
                   onClick={() => handleDateClick(currentDate.date(i + 1))}
                 >
                   <span className="text-[#535355] font-[Pretendard] text-[16px] font-[600]">
@@ -136,17 +132,17 @@ export default function Attendance() {
                   </span>
                   <div className="flex">
                     {data?.data.map((monthEvent: EventData) => {
-                      const date = new Date(monthEvent.startAt);
+                      const date = new Date(monthEvent.attendanceTime);
                       const day = date.getDate();
                       return day === i + 1 ? (
                         monthEvent.attendanceId ? (
                           <div
-                            key={'event' + i}
+                            key={`event-${monthEvent.attendanceId}-${day}`}
                             className="w-[8px] h-[8px] bg-[#9747FF] rounded-[11px] mr-[3px]"
                           ></div>
                         ) : (
                           <div
-                            key={'doneEvent' + i}
+                            key={`doneEvent-${monthEvent.attendanceId}-${day}`}
                             className="w-[8px] h-[8px] bg-[#EA4335] rounded-[11px] mr-[3px]"
                           ></div>
                         )
@@ -158,14 +154,22 @@ export default function Attendance() {
             </div>
           </div>
 
-          {selectedDate && (
-            <ModalManager
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              selectedEvent={selectedEvent}
-              refetch={refetch}
-            />
-          )}
+          {selectedDate &&
+            (() => {
+              const matchedEvent = data?.data.find((event) =>
+                dayjs(event.attendanceTime).isSame(selectedDate, 'day'),
+              );
+
+              return (
+                <ModalManager
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  existedAttendanceId={matchedEvent?.attendanceId ?? null}
+                  existedTitle={matchedEvent?.title ?? ''}
+                  refetch={refetch}
+                />
+              );
+            })()}
         </div>
       </div>
     </div>

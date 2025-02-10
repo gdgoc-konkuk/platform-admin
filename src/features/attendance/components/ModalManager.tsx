@@ -1,18 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 
 import { CreateQRModal } from './CreateQRModal';
 import { QRModal } from './QRModal';
+import { useQuery } from '@tanstack/react-query';
+import { postReAttendance } from '../apis/attendanceRequest';
+
+type EventData = {
+  attendanceId: number;
+  attendUrl: string;
+};
+
+type ResponseData = {
+  message: string;
+  data: EventData;
+  success: boolean;
+};
 
 interface ModalManagerProps {
   selectedDate: dayjs.Dayjs;
   setSelectedDate: React.Dispatch<React.SetStateAction<Dayjs | null>>;
+  existedAttendanceId: number | null;
+  existedTitle: string;
   refetch: () => void;
 }
 
 export const ModalManager: React.FC<ModalManagerProps> = ({
   selectedDate,
   setSelectedDate,
+  existedAttendanceId,
+  existedTitle,
   refetch,
 }) => {
   const [isFirstModalOpen, setIsFirstModalOpen] = useState(true);
@@ -32,6 +49,21 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
     setIsSecondModalOpen(false);
     setSelectedDate(null);
   };
+
+  const { data, error, isLoading } = useQuery<ResponseData>({
+    queryKey: ['existed', existedAttendanceId],
+    queryFn: () => postReAttendance(existedAttendanceId!),
+    enabled: !!existedAttendanceId,
+  });
+
+  useEffect(() => {
+    if (data && data.success && existedAttendanceId) {
+      setAttendanceId(data.data.attendanceId);
+      setAttendUrl(data.data.attendUrl);
+      setTitle(existedTitle);
+      closeFirstModalAndOpenSecond();
+    }
+  }, [data, existedAttendanceId, existedTitle]);
 
   return (
     <div>
@@ -57,6 +89,9 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
           refetch={refetch}
         />
       )}
+
+      {isLoading && <div>Loading...</div>}
+      {error && <div>Error: {(error as Error).message}</div>}
     </div>
   );
 };

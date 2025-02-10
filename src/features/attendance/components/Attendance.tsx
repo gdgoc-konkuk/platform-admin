@@ -154,13 +154,22 @@ export default function Attendance() {
             </div>
           </div>
 
-          {selectedDate && (
-            <ModalManager
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              refetch={refetch}
-            />
-          )}
+          {selectedDate &&
+            (() => {
+              const matchedEvent = data?.data.find((event) =>
+                dayjs(event.attendanceTime).isSame(selectedDate, 'day'),
+              );
+
+              return (
+                <ModalManager
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  existedAttendanceId={matchedEvent?.attendanceId ?? null}
+                  existedTitle={matchedEvent?.title ?? ''}
+                  refetch={refetch}
+                />
+              );
+            })()}
         </div>
       </div>
     </div>

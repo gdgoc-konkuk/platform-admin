@@ -27,7 +27,7 @@ export function MemberInfo() {
   }
 
   return (
-    <div>
+    <div className="h-full overflow-y-auto">
       <h1 className="mb-[2vh] font-['NanumSquareRoundEB'] text-[24px] font-extrabold ">
         멤버 정보
       </h1>

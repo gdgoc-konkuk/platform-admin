@@ -53,6 +53,7 @@ export default function CreateMail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [contentPreview, setContentPreview] = useState('');
 
   const methods = useForm<CreateMailFormFields>({
     resolver: zodResolver(CreateMailFormSchema),
@@ -348,9 +349,20 @@ export default function CreateMail() {
           </div>
           <Textarea
             {...methods.register('content')}
-            className="mt-[38px] h-[500px] w-full rounded-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            onChange={(e) => {
+              methods.setValue('content', e.target.value);
+              setContentPreview(e.target.value.replace(/\n/g, '<br />'));
+            }}
+            className="mt-[38px] h-[200px] w-full rounded-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             placeholder="내용을 입력해주세요."
           />
+          <div className="mt-6 p-4 border border-[#DADADA] rounded-[10px] bg-[#FAFAFA]">
+            <h2 className="text-[16px] font-semibold mb-2">미리보기</h2>
+            <div
+              className="text-[16px] text-[#333] whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{ __html: contentPreview }}
+            />
+          </div>
           {methods.formState.errors.content && (
             <p className="text-sm text-red-500">
               {methods.formState.errors.content.message}

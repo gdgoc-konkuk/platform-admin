@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import Symbol from '/symbol.svg';
 import Google from '/google.png';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_LOGIN_URL;
 
 export default function Login() {
   return (

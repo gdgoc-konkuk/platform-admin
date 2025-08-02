@@ -5,7 +5,6 @@ import Google from '/google.png';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function Login() {
-  console.log(import.meta.env.VITE_BASE_URL);
   return (
     <div className="flex h-full w-full font-pretendard">
       <div className="flex w-3/5 flex-col justify-between px-[50px] py-11">

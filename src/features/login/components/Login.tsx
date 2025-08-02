@@ -2,7 +2,10 @@ import { Button } from '@/components/ui/button';
 import Symbol from '/symbol.svg';
 import Google from '/google.png';
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export default function Login() {
+  console.log(import.meta.env.VITE_BASE_URL);
   return (
     <div className="flex h-full w-full font-pretendard">
       <div className="flex w-3/5 flex-col justify-between px-[50px] py-11">
@@ -18,7 +21,7 @@ export default function Login() {
       </div>
       <div className="flex w-2/5 flex-col items-center justify-between bg-background py-[53px]">
         <div className="w-1"></div>
-        <a href="https://admin.gdgoc-konkuk.com/login/oauth2/authorization/google">
+        <a href={`${BASE_URL}/login/oauth2/authorization/google`}>
           <Button className="w-[400px] h-[50px] text-[17px] font-semibold bg-white text-black hover:bg-[#f2f2f2] flex items-center rounded-3xl">
             <img src={Google} alt="google" width="30px" className="mr-3" />
             구글로 로그인

@@ -10,7 +10,7 @@ export const useAttendanceStatus = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.month());
 
   const params = {
-    batch: '24-25',
+    batch: '25-26',
     year: selectedYear.toString(),
     month: (selectedMonth + 1).toString(),
   };

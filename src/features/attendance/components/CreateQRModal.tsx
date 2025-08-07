@@ -49,7 +49,7 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
 
     const attendanceData: AttendanceData = {
       title: title,
-      batch: '24-25',
+      batch: '25-26',
     };
     newAttendanceMutation.mutate(attendanceData);
     closeFirstModalAndOpenSecond();

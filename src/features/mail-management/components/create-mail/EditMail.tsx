@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import DateTimePicker from '@/components/ui/DateTimePicker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -51,6 +50,7 @@ export default function EditMail() {
   const [nameCloseHovered, setNameCloseHovered] = useState(false);
   const [titleCloseHovered, setTitleCloseHovered] = useState(false);
   const [emailCloseHovered, setEmailCloseHovered] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'edit' | 'preview'>('edit');
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -379,18 +379,55 @@ export default function EditMail() {
               </p>
             )}
           </div>
-          <Textarea
-            {...methods.register('content')}
-            className="mt-[38px] h-[500px] w-full rounded-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            placeholder="내용을 입력해주세요."
-          />
-          {methods.formState.errors.content && (
-            <p className="text-sm text-red-500">
-              {methods.formState.errors.content.message}
-            </p>
-          )}
+          
+          <div className="mt-8">
+            <div className="flex gap-1">
+              <button
+                type="button"
+                className={cn(
+                  'rounded-t-[10px] border  border-b-0 border-[#DADADA] bg-white px-6 py-2 text-[18px] font-semibold',
+                  previewMode === 'edit' ? 'text-[#171719]' : 'text-[#BEBEBF]',
+                )}
+                onClick={() => setPreviewMode('edit')}
+              >
+                작성
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  'rounded-t-[10px] border border-b-0 border-[#DADADA] bg-white px-6 py-2 text-[18px] font-semibold',
+                  previewMode === 'preview'
+                    ? 'text-[#171719]'
+                    : 'text-[#BEBEBF]',
+                )}
+                onClick={() => setPreviewMode('preview')}
+              >
+                미리보기
+              </button>
+            </div>
+            {previewMode === 'edit' ? (
+              <textarea
+                {...methods.register('content')}
+                className="h-[500px] w-full rounded-b-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] resize-none"
+                placeholder="내용을 입력해주세요."
+              />
+            ) : (
+              <div
+                className="h-[500px] w-full rounded-b-[10px] border border-[#DADADA] bg-white p-[21px] text-[18px] text-[#171719] overflow-y-auto"
+                dangerouslySetInnerHTML={{
+                  __html: methods.watch('content') || '',
+                }}
+              />
+            )}
+            {methods.formState.errors.content && (
+              <p className="text-sm text-red-500">
+                {methods.formState.errors.content.message}
+              </p>
+            )}
+          </div>
         </div>
       </form>
     </FormProvider>
   );
 }
+

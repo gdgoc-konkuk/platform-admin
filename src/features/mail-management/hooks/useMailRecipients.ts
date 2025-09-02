@@ -137,7 +137,9 @@ export const useMailRecipients = (
 
   return {
     users,
+    setUsers,
     uploadedFiles,
+    setUploadedFiles,
     isCheckedAll,
     handleOnUploadAccepted,
     handleRemoveUploadedFile,

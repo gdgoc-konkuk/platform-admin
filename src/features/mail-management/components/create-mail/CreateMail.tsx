@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '@/components/ui/button';
 import DateTimePicker from '@/components/ui/DateTimePicker';
 import { Input } from '@/components/ui/input';
@@ -14,10 +13,9 @@ import {
 import CheckedIcon from '/icons/checked.svg';
 import UncheckedIcon from '/icons/unchecked.svg';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import BlackCloseIcon from '/icons/close-black.svg';
 import GrayCloseIcon from '/icons/close-gray.svg';
-import DeleteIcon from '/icons/delete.svg';
 import {
   Controller,
   FormProvider,
@@ -35,28 +33,10 @@ import { createMail } from '@/features/mail-management/apis/createMail';
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { useCSVReader } from 'react-papaparse';
-import { ParseResult } from 'papaparse';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  isChecked: boolean;
-}
-
-interface UploadedFile {
-  file: File;
-  id: number;
-  users: User[];
-}
+import { CsvUploader } from '@/features/mail-management/components/CsvUploader';
+import { useMailRecipients } from '@/features/mail-management/hooks/useMailRecipients';
 
 export default function CreateMail() {
-  const { CSVReader } = useCSVReader();
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-
-  const [users, setUsers] = useState<User[]>([]);
-  const [isCheckedAll, setIsCheckedAll] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [nameCloseHovered, setNameCloseHovered] = useState(false);
@@ -77,96 +57,32 @@ export default function CreateMail() {
       minute: '00',
       content: '',
     },
+    mode: 'onChange',
   });
 
-  const addReciever = () => {
-    if (!name || !email) return;
-    methods.setValue('recieverInfos', [
-      ...methods.watch('recieverInfos'),
-      { name, email },
-    ]);
-    setUsers([
-      ...users,
-      { id: users.length + 1, name, email, isChecked: false },
-    ]);
-    setName('');
-    setEmail('');
-  };
+  const {
+    users,
+    uploadedFiles,
+    isCheckedAll,
+    handleOnUploadAccepted,
+    handleRemoveUploadedFile,
+    addRecipient,
+    removeSelectedRecipients,
+    toggleUserChecked,
+    toggleAllChecked,
+  } = useMailRecipients(methods.setValue);
 
-  const removeReciever = () => {
-    methods.setValue(
-      'recieverInfos',
-      methods.watch('recieverInfos').filter((info) => {
-        return !users.find(
-          (user) => user.name === info.name && user.email === info.email,
-        );
-      }),
-    );
-    setUsers((users) => users.filter((user) => !user.isChecked));
-    setUsers((users) =>
-      users.map((user, index) => ({ ...user, id: index + 1 })),
-    );
-  };
-
-  const mergeUsers = (currentUsers: User[], newUsers: User[]) => {
-    const combined = [...currentUsers];
-    newUsers.forEach((newUser) => {
-      const isDuplicate = combined.some(
-        (user) =>
-          user.email.toLowerCase() === newUser.email.toLowerCase() &&
-          user.name === newUser.name,
-      );
-      if (!isDuplicate) combined.push(newUser);
-    });
-    return combined.map((user, idx) => ({ ...user, id: idx + 1 }));
-  };
-
-  const handleOnUploadAccepted = (
-    results: ParseResult<string[]>,
-    file: File,
-  ) => {
-    const data = results.data;
-    const parsedUsers: User[] = data
-      .slice(1)
-      .filter((row) => row.length >= 2 && row[0] && row[1])
-      .map((row) => ({
-        id: 0,
-        name: row[0].trim(),
-        email: row[1].trim(),
-        isChecked: false,
-      }));
-
-    if (parsedUsers.length === 0) return;
-
-    setUploadedFiles((prev) => [
-      ...prev,
-      { file, id: prev.length + 1, users: parsedUsers },
-    ]);
-
-    const merged = mergeUsers(users, parsedUsers);
-    setUsers(merged);
-
-    methods.setValue(
-      'recieverInfos',
-      merged.map(({ name, email }) => ({ name, email })),
-    );
-  };
-
-  const handleRemoveUploadedFile = (fileId: number) => {
-    setUploadedFiles((prevFiles) => {
-      const remainingFiles = prevFiles.filter((f) => f.id !== fileId);
-      const remainingUsers = remainingFiles.flatMap((f) => f.users);
-
-      const merged = mergeUsers([], remainingUsers);
-      setUsers(merged);
-
-      methods.setValue(
-        'recieverInfos',
-        merged.map(({ name, email }) => ({ name, email })),
-      );
-
-      return remainingFiles;
-    });
+  const handleAddRecipientClick = () => {
+    if (addRecipient(name, email)) {
+      setName('');
+      setEmail('');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: '추가 실패',
+        description: '이름과 이메일 형식을 확인해주세요.',
+      });
+    }
   };
 
   const handleOnUploadError = () => {
@@ -200,12 +116,6 @@ export default function CreateMail() {
     await mutateAsync(formData);
   };
 
-  useEffect(() => {
-    users.find((user) => user.isChecked === false) || users.length === 0
-      ? setIsCheckedAll(false)
-      : setIsCheckedAll(true);
-  }, [users]);
-
   return (
     <FormProvider {...methods}>
       <form
@@ -214,7 +124,10 @@ export default function CreateMail() {
       >
         <h1 className="font-nanum text-[24px]">메일 전송 관리</h1>
 
-        <Button className="h-[50px] w-[86px] self-end px-[28px] py-3 text-white">
+        <Button
+          type="submit"
+          className="h-[50px] w-[86px] self-end px-[28px] py-3 text-white"
+        >
           저장
         </Button>
 
@@ -286,54 +199,20 @@ export default function CreateMail() {
               )}
             >{`${methods.watch('subject').length}/30`}</span>
           </div>
-          {methods.formState.errors.subject && (
-            <p className="text-sm text-red-500">
-              {methods.formState.errors.subject.message}
-            </p>
-          )}
+          <p className="text-sm text-red-500 h-4">
+            {methods.formState.errors.subject?.message}
+          </p>
 
           <div className="mt-8">
             <Label className="text-[18px] font-semibold text-[#171719]">
               CSV 파일로 여러 이름/이메일 추가
             </Label>
-            <CSVReader
+            <CsvUploader
+              uploadedFiles={uploadedFiles}
               onUploadAccepted={handleOnUploadAccepted}
               onUploadError={handleOnUploadError}
-              noDrag
-              config={{ header: false, skipEmptyLines: true }}
-            >
-              {({ getRootProps }: any) => (
-                <div>
-                  <Button
-                    {...getRootProps()}
-                    className="h-[50px] w-[160px] px-4 py-3 text-white"
-                  >
-                    CSV 업로드
-                  </Button>
-                </div>
-              )}
-            </CSVReader>
-
-            <div className="mt-4 flex flex-wrap gap-4">
-              {uploadedFiles.map(({ file, id }) => (
-                <div
-                  key={id}
-                  className="relative flex items-center border border-gray-300 rounded px-4 py-2 bg-white shadow"
-                >
-                  <span className="text-sm font-medium max-w-[200px] truncate">
-                    {file.name}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveUploadedFile(id)}
-                    className="absolute top-[-10px] right-[-10px] flex h-6 w-6 cursor-pointer items-center justify-center"
-                    aria-label="파일 삭제"
-                  >
-                    <img src={DeleteIcon} alt="삭제" className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+              onRemoveFile={handleRemoveUploadedFile}
+            />
           </div>
 
           <div className="flex flex-col gap-5 mt-[46px]">
@@ -388,16 +267,16 @@ export default function CreateMail() {
                 </div>
               </div>
               <div className="flex gap-[14px] self-end">
-                <Button onClick={addReciever} type="button">
+                <Button onClick={handleAddRecipientClick} type="button">
                   추가
                 </Button>
-                <Button onClick={removeReciever} type="button">
+                <Button onClick={removeSelectedRecipients} type="button">
                   삭제
                 </Button>
               </div>
             </div>
 
-            <div className="mt-6 flex h-[400px] overflow-y-scroll w-full flex-col rounded-[20px] border border-[#DADADA] scrollbar scrollbar-thumb-[#DADADA] scrollbar-track-transparent">
+            <div className="mt-6 flex h-[400px] w-full flex-col rounded-[20px] border border-[#DADADA] overflow-y-scroll scrollbar scrollbar-thumb-[#DADADA] scrollbar-track-transparent">
               <Table>
                 <TableHeader className="sticky top-0 z-10 bg-white">
                   <TableRow className="h-[60px] px-[34px] py-5">
@@ -413,15 +292,7 @@ export default function CreateMail() {
                         id="check-all"
                         type="checkbox"
                         checked={isCheckedAll}
-                        onChange={(e) => {
-                          setUsers(
-                            users.map((user) => ({
-                              ...user,
-                              isChecked: e.target.checked,
-                            })),
-                          );
-                          setIsCheckedAll(e.target.checked);
-                        }}
+                        onChange={(e) => toggleAllChecked(e.target.checked)}
                         className="hidden"
                       />
                     </TableHead>
@@ -446,15 +317,7 @@ export default function CreateMail() {
                           id={`check-${user.id}`}
                           type="checkbox"
                           checked={user.isChecked}
-                          onChange={(e) => {
-                            setUsers(
-                              users.map((u) =>
-                                u.id === user.id
-                                  ? { ...u, isChecked: e.target.checked }
-                                  : u,
-                              ),
-                            );
-                          }}
+                          onChange={() => toggleUserChecked(user.id)}
                           className="hidden"
                         />
                       </TableCell>
@@ -466,11 +329,9 @@ export default function CreateMail() {
                 </TableBody>
               </Table>
             </div>
-            {methods.formState.errors.recieverInfos && (
-              <p className="text-sm text-red-500">
-                이름 또는 이메일 형식이 올바르지 않은 사람이 존재합니다.
-              </p>
-            )}
+            <p className="text-sm text-red-500 h-4">
+              {methods.formState.errors.recieverInfos?.message}
+            </p>
           </div>
 
           <div className="mt-8">
@@ -501,22 +362,20 @@ export default function CreateMail() {
             {previewMode === 'edit' ? (
               <textarea
                 {...methods.register('content')}
-                className="h-[500px] w-full rounded-b-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] resize-none"
+                className="h-[500px] w-full rounded-b-[10px] rounded-tr-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] resize-none"
                 placeholder="내용을 입력해주세요."
               />
             ) : (
               <div
-                className="h-[500px] w-full rounded-b-[10px] border border-[#DADADA] bg-white p-[21px] text-[18px] text-[#171719] overflow-y-auto"
+                className="h-[500px] w-full rounded-b-[10px] rounded-tr-[10px] border border-[#DADADA] bg-white p-[21px] text-[18px] text-[#171719] overflow-y-auto"
                 dangerouslySetInnerHTML={{
                   __html: methods.watch('content') || '',
                 }}
               />
             )}
-            {methods.formState.errors.content && (
-              <p className="text-sm text-red-500">
-                {methods.formState.errors.content.message}
-              </p>
-            )}
+            <p className="text-sm text-red-500 h-4">
+              {methods.formState.errors.content?.message}
+            </p>
           </div>
         </div>
       </form>

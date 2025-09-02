@@ -12,3 +12,16 @@ export interface Mail {
 export interface MailData extends Mail {
   isChecked?: boolean;
 }
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  isChecked: boolean;
+}
+
+export interface UploadedFile {
+  file: File;
+  id: number;
+  users: Omit<User, 'id' | 'isChecked'>[];
+}

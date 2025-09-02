@@ -26,10 +26,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateMailFormFields,
   CreateMailFormSchema,
-} from '../../lib/CreateMailFormSchema';
+} from '@/features/mail-management/lib/CreateMailFormSchema';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
-import { createMail } from '../../apis/createMail';
+import { createMail } from '@/features/mail-management/apis/createMail';
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';

@@ -27,14 +27,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateMailFormFields,
   CreateMailFormSchema,
-} from '../../lib/CreateMailFormSchema';
+} from '@/features/mail-management/lib/CreateMailFormSchema';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
-import { editMail } from '../../apis/editMail';
+import { editMail } from '@/features/mail-management/apis/editMail';
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getMail } from '../../apis/getMail';
+import { getMail } from '@/features/mail-management/apis/getMail';
 
 interface User {
   id: number;

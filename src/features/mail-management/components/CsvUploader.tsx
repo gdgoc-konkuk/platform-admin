@@ -28,9 +28,10 @@ export function CsvUploader({
         noDrag
         config={{ header: false, skipEmptyLines: true }}
       >
-        {({ getRootProps } : any) => (
+        {({ getRootProps }: any) => (
           <div>
             <Button
+              type="button"
               {...getRootProps()}
               className="h-[50px] w-[160px] px-4 py-3 text-white"
             >

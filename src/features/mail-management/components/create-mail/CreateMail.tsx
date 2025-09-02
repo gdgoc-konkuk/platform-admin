@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '@/components/ui/button';
 import DateTimePicker from '@/components/ui/DateTimePicker';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import BlackCloseIcon from '/icons/close-black.svg';
 import GrayCloseIcon from '/icons/close-gray.svg';
+import DeleteIcon from '/icons/delete.svg';
 import {
   Controller,
   FormProvider,
@@ -33,6 +35,8 @@ import { createMail } from '@/features/mail-management/apis/createMail';
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useCSVReader } from 'react-papaparse';
+import { ParseResult } from 'papaparse';
 
 interface User {
   id: number;
@@ -41,7 +45,16 @@ interface User {
   isChecked: boolean;
 }
 
+interface UploadedFile {
+  file: File;
+  id: number;
+  users: User[];
+}
+
 export default function CreateMail() {
+  const { CSVReader } = useCSVReader();
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+
   const [users, setUsers] = useState<User[]>([]);
   const [isCheckedAll, setIsCheckedAll] = useState(false);
   const [email, setEmail] = useState('');
@@ -89,10 +102,79 @@ export default function CreateMail() {
         );
       }),
     );
-    setUsers((users) => users.filter((user) => user.isChecked === false));
+    setUsers((users) => users.filter((user) => !user.isChecked));
     setUsers((users) =>
       users.map((user, index) => ({ ...user, id: index + 1 })),
     );
+  };
+
+  const mergeUsers = (currentUsers: User[], newUsers: User[]) => {
+    const combined = [...currentUsers];
+    newUsers.forEach((newUser) => {
+      const isDuplicate = combined.some(
+        (user) =>
+          user.email.toLowerCase() === newUser.email.toLowerCase() &&
+          user.name === newUser.name,
+      );
+      if (!isDuplicate) combined.push(newUser);
+    });
+    return combined.map((user, idx) => ({ ...user, id: idx + 1 }));
+  };
+
+  const handleOnUploadAccepted = (
+    results: ParseResult<string[]>,
+    file: File,
+  ) => {
+    const data = results.data;
+    const parsedUsers: User[] = data
+      .slice(1)
+      .filter((row) => row.length >= 2 && row[0] && row[1])
+      .map((row) => ({
+        id: 0,
+        name: row[0].trim(),
+        email: row[1].trim(),
+        isChecked: false,
+      }));
+
+    if (parsedUsers.length === 0) return;
+
+    setUploadedFiles((prev) => [
+      ...prev,
+      { file, id: prev.length + 1, users: parsedUsers },
+    ]);
+
+    const merged = mergeUsers(users, parsedUsers);
+    setUsers(merged);
+
+    methods.setValue(
+      'recieverInfos',
+      merged.map(({ name, email }) => ({ name, email })),
+    );
+  };
+
+  const handleRemoveUploadedFile = (fileId: number) => {
+    setUploadedFiles((prevFiles) => {
+      const remainingFiles = prevFiles.filter((f) => f.id !== fileId);
+      const remainingUsers = remainingFiles.flatMap((f) => f.users);
+
+      const merged = mergeUsers([], remainingUsers);
+      setUsers(merged);
+
+      methods.setValue(
+        'recieverInfos',
+        merged.map(({ name, email }) => ({ name, email })),
+      );
+
+      return remainingFiles;
+    });
+  };
+
+  const handleOnUploadError = () => {
+    toast({
+      variant: 'destructive',
+      title: 'CSV 파일 업로드 오류',
+      description: 'CSV 파일을 읽는 중 오류가 발생했습니다.',
+    });
   };
 
   const { mutateAsync } = useMutation({
@@ -209,6 +291,50 @@ export default function CreateMail() {
               {methods.formState.errors.subject.message}
             </p>
           )}
+
+          <div className="mt-8">
+            <Label className="text-[18px] font-semibold text-[#171719]">
+              CSV 파일로 여러 이름/이메일 추가
+            </Label>
+            <CSVReader
+              onUploadAccepted={handleOnUploadAccepted}
+              onUploadError={handleOnUploadError}
+              noDrag
+              config={{ header: false, skipEmptyLines: true }}
+            >
+              {({ getRootProps }: any) => (
+                <div>
+                  <Button
+                    {...getRootProps()}
+                    className="h-[50px] w-[160px] px-4 py-3 text-white"
+                  >
+                    CSV 업로드
+                  </Button>
+                </div>
+              )}
+            </CSVReader>
+
+            <div className="mt-4 flex flex-wrap gap-4">
+              {uploadedFiles.map(({ file, id }) => (
+                <div
+                  key={id}
+                  className="relative flex items-center border border-gray-300 rounded px-4 py-2 bg-white shadow"
+                >
+                  <span className="text-sm font-medium max-w-[200px] truncate">
+                    {file.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveUploadedFile(id)}
+                    className="absolute top-[-10px] right-[-10px] flex h-6 w-6 cursor-pointer items-center justify-center"
+                    aria-label="파일 삭제"
+                  >
+                    <img src={DeleteIcon} alt="삭제" className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="flex flex-col gap-5 mt-[46px]">
             <div className="flex gap-6">

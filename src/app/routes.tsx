@@ -9,8 +9,8 @@ import MailManagement from '@/features/mail-management/components/MailManagement
 import SessionManagement from '@/features/session-management/components/SessionManagement';
 import { Navigate, Outlet } from 'react-router-dom';
 import { OauthCallback } from '@/features/login/components/OauthCallback';
-import { PrivateRoute } from './PrivateRoute';
-import { PublicRoute } from './PuyblicRoute';
+import { PrivateRoute } from '@/app/PrivateRoute';
+import { PublicRoute } from '@/app/PublicRoute'
 import { MemberInfo } from '@/features/member-info/components/MemberInfo';
 
 const routes = () => [

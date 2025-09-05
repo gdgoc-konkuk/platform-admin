@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import DateTimePicker from '@/components/ui/DateTimePicker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -27,38 +26,34 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateMailFormFields,
   CreateMailFormSchema,
-} from '../../lib/CreateMailFormSchema';
+} from '@/features/mail-management/lib/CreateMailFormSchema';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
-import { editMail } from '../../apis/editMail';
+import { editMail } from '@/features/mail-management/apis/editMail';
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getMail } from '../../apis/getMail';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  isChecked: boolean;
-}
+import { getMail } from '@/features/mail-management/apis/getMail';
+import { CsvUploader } from '@/features/mail-management/components/CsvUploader';
+import { useMailRecipients } from '@/features/mail-management/hooks/useMailRecipients';
+import { User } from '@/features/mail-management/types/mail';
 
 export default function EditMail() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isCheckedAll, setIsCheckedAll] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [nameCloseHovered, setNameCloseHovered] = useState(false);
   const [titleCloseHovered, setTitleCloseHovered] = useState(false);
   const [emailCloseHovered, setEmailCloseHovered] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'edit' | 'preview'>('edit');
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
   const { data, isLoading } = useQuery({
     queryKey: ['mail', id],
     queryFn: () => getMail(Number(id)),
+    enabled: !!id,
   });
 
   const methods = useForm<CreateMailFormFields>({
@@ -71,35 +66,45 @@ export default function EditMail() {
       minute: '00',
       content: '',
     },
+    mode: 'onChange',
   });
 
-  const addReciever = () => {
-    if (!name || !email) return;
-    methods.setValue('recieverInfos', [
-      ...methods.watch('recieverInfos'),
-      { name, email },
-    ]);
-    setUsers([
-      ...users,
-      { id: users.length + 1, name, email, isChecked: false },
-    ]);
-    setName('');
-    setEmail('');
-  };
+  const {
+    users,
+    setUsers,
+    uploadedFiles,
+    isCheckedAll,
+    handleOnUploadAccepted,
+    handleRemoveUploadedFile,
+    addRecipient,
+    removeSelectedRecipients,
+    toggleUserChecked,
+    toggleAllChecked,
+  } = useMailRecipients(methods.setValue);
 
-  const removeReciever = () => {
-    const filteredUsers = users.filter((user) => user.isChecked === false);
-    const reindexedUsers = filteredUsers.map((user, index) => ({
-      ...user,
-      id: index + 1,
-    }));
+  useEffect(() => {
+    const mailData = data?.data;
+    if (mailData) {
+      methods.reset({
+        subject: mailData.subject,
+        content: mailData.content,
+        date: mailData.sendAt.split('T')[0],
+        hour: mailData.sendAt.split('T')[1].split(':')[0],
+        minute: mailData.sendAt.split('T')[1].split(':')[1],
+        recieverInfos: mailData.receiverInfos,
+      });
 
-    setUsers(reindexedUsers);
-    methods.setValue(
-      'recieverInfos',
-      reindexedUsers.map((user) => ({ name: user.name, email: user.email })),
-    );
-  };
+      const initialUsers: User[] = mailData.receiverInfos.map(
+        (info: { name: string; email: string }, index: number) => ({
+          id: index + 1,
+          name: info.name,
+          email: info.email,
+          isChecked: false,
+        }),
+      );
+      setUsers(initialUsers);
+    }
+  }, [data, methods, setUsers]);
 
   const { mutateAsync } = useMutation({
     mutationFn: (formData: CreateMailFormFields) =>
@@ -110,6 +115,7 @@ export default function EditMail() {
         description: '메일을 성공적으로 수정했습니다.',
       });
       queryClient.invalidateQueries({ queryKey: ['mails'] });
+      queryClient.invalidateQueries({ queryKey: ['mail', id] });
       navigate('/app/mail');
     },
     onError: () => {
@@ -121,40 +127,33 @@ export default function EditMail() {
     },
   });
 
-  const onSubmit: SubmitHandler<CreateMailFormFields> = async (formData) => {
-    console.log(formData);
-    await mutateAsync(formData);
+  const onSubmit: SubmitHandler<CreateMailFormFields> = (formData) => {
+    mutateAsync(formData);
   };
 
-  useEffect(() => {
-    users.find((user) => user.isChecked === false) || users.length === 0
-      ? setIsCheckedAll(false)
-      : setIsCheckedAll(true);
-  }, [users]);
+  const handleAddRecipientClick = () => {
+    if (addRecipient(name, email)) {
+      setName('');
+      setEmail('');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: '추가 실패',
+        description: '이름과 이메일 형식을 확인해주세요.',
+      });
+    }
+  };
 
-  useEffect(() => {
-    const mailData = data?.data;
-    if (!mailData) return;
-    methods.setValue('subject', mailData.subject);
-    methods.setValue('content', mailData.content);
-    methods.setValue('date', mailData.sendAt.split('T')[0]);
-    methods.setValue('hour', mailData.sendAt.split('T')[1].split(':')[0]);
-    methods.setValue('minute', mailData.sendAt.split('T')[1].split(':')[1]);
-    methods.setValue('recieverInfos', mailData.receiverInfos);
-    setUsers(
-      mailData.receiverInfos.map(
-        (info: { name: string; email: string }, index: number) => ({
-          id: index + 1,
-          name: info.name,
-          email: info.email,
-          isChecked: false,
-        }),
-      ),
-    );
-  }, [data, methods]);
+  const handleOnUploadError = () => {
+    toast({
+      variant: 'destructive',
+      title: 'CSV 파일 업로드 오류',
+      description: 'CSV 파일을 읽는 중 오류가 발생했습니다.',
+    });
+  };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="p-8">Loading...</div>;
   }
 
   return (
@@ -165,7 +164,7 @@ export default function EditMail() {
       >
         <h1 className="font-nanum text-[24px]">메일 전송 관리</h1>
 
-        <Button className="h-[50px] w-[86px] self-end px-[28px] py-3 text-white">
+        <Button className="h-[50px] w-[86px] self-end px-[28px] py-3 text-white" type="button">
           저장
         </Button>
 
@@ -243,6 +242,18 @@ export default function EditMail() {
             </p>
           )}
 
+          <div className="mt-8">
+            <Label className="text-[18px] font-semibold text-[#171719]">
+              CSV 파일로 여러 이름/이메일 추가
+            </Label>
+            <CsvUploader
+              uploadedFiles={uploadedFiles}
+              onUploadAccepted={handleOnUploadAccepted}
+              onUploadError={handleOnUploadError}
+              onRemoveFile={handleRemoveUploadedFile}
+            />
+          </div>
+
           <div className="flex flex-col gap-5 mt-[46px]">
             <div className="flex gap-6">
               <div className="flex flex-col gap-[18px]">
@@ -295,10 +306,10 @@ export default function EditMail() {
                 </div>
               </div>
               <div className="flex gap-[14px] self-end">
-                <Button onClick={addReciever} type="button">
+                <Button onClick={handleAddRecipientClick} type="button">
                   추가
                 </Button>
-                <Button onClick={removeReciever} type="button">
+                <Button onClick={removeSelectedRecipients} type="button">
                   삭제
                 </Button>
               </div>
@@ -320,15 +331,7 @@ export default function EditMail() {
                         id="check-all"
                         type="checkbox"
                         checked={isCheckedAll}
-                        onChange={(e) => {
-                          setUsers(
-                            users.map((user) => ({
-                              ...user,
-                              isChecked: e.target.checked,
-                            })),
-                          );
-                          setIsCheckedAll(e.target.checked);
-                        }}
+                        onChange={(e) => toggleAllChecked(e.target.checked)}
                         className="hidden"
                       />
                     </TableHead>
@@ -353,15 +356,7 @@ export default function EditMail() {
                           id={`check-${user.id}`}
                           type="checkbox"
                           checked={user.isChecked}
-                          onChange={(e) => {
-                            setUsers((prev) =>
-                              prev.map((prevUser) =>
-                                prevUser.id === user.id
-                                  ? { ...prevUser, isChecked: e.target.checked }
-                                  : prevUser,
-                              ),
-                            );
-                          }}
+                          onChange={() => toggleUserChecked(user.id)}
                           className="hidden"
                         />
                       </TableCell>
@@ -376,19 +371,55 @@ export default function EditMail() {
             {methods.formState.errors.recieverInfos && (
               <p className="text-sm text-red-500">
                 이름 또는 이메일 형식이 올바르지 않은 사람이 존재합니다.
-              </p>
+            </p>
             )}
           </div>
-          <Textarea
-            {...methods.register('content')}
-            className="mt-[38px] h-[500px] w-full rounded-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            placeholder="내용을 입력해주세요."
-          />
-          {methods.formState.errors.content && (
-            <p className="text-sm text-red-500">
-              {methods.formState.errors.content.message}
+
+          <div className="mt-8">
+            <div className="flex gap-1">
+              <button
+                type="button"
+                className={cn(
+                  'rounded-t-[10px] border  border-b-0 border-[#DADADA] bg-white px-6 py-2 text-[18px] font-semibold',
+                  previewMode === 'edit' ? 'text-[#171719]' : 'text-[#BEBEBF]',
+                )}
+                onClick={() => setPreviewMode('edit')}
+              >
+                작성
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  'rounded-t-[10px] border border-b-0 border-[#DADADA] bg-white px-6 py-2 text-[18px] font-semibold',
+                  previewMode === 'preview'
+                    ? 'text-[#171719]'
+                    : 'text-[#BEBEBF]',
+                )}
+                onClick={() => setPreviewMode('preview')}
+              >
+                미리보기
+              </button>
+            </div>
+            {previewMode === 'edit' ? (
+              <textarea
+                {...methods.register('content')}
+                className="h-[500px] w-full rounded-b-[10px] border border-[#DADADA] bg-white px-[21px] py-[20px] text-[18px] text-[#171719] resize-none"
+                placeholder="내용을 입력해주세요."
+              />
+            ) : (
+              <div
+                className="h-[500px] w-full rounded-b-[10px] border border-[#DADADA] bg-white p-[21px] text-[18px] text-[#171719] overflow-y-auto"
+                dangerouslySetInnerHTML={{
+                  __html: methods.watch('content') || '',
+                }}
+              />
+            )}
+            {methods.formState.errors.content && (
+              <p className="text-sm text-red-500">
+                {methods.formState.errors.content.message}
             </p>
-          )}
+            )}
+          </div>
         </div>
       </form>
     </FormProvider>

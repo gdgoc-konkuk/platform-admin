@@ -35,6 +35,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { CsvUploader } from '@/features/mail-management/components/CsvUploader';
 import { useMailRecipients } from '@/features/mail-management/hooks/useMailRecipients';
+import { ParseResult } from 'papaparse';
 
 export default function CreateMail() {
   const [email, setEmail] = useState('');
@@ -91,6 +92,27 @@ export default function CreateMail() {
       title: 'CSV 파일 업로드 오류',
       description: 'CSV 파일을 읽는 중 오류가 발생했습니다.',
     });
+  };
+
+  const handleCsvUploadAccepted = (
+    results: ParseResult<string[]>,
+    file: File,
+  ) => {
+    try {
+      handleOnUploadAccepted(results, file);
+    } catch (error: unknown) {
+      let errorMessage = '알 수 없는 오류가 발생했습니다.';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      toast({
+        variant: 'destructive',
+        title: 'CSV 파일 처리 오류',
+        description: errorMessage,
+      });
+    }
   };
 
   const { mutateAsync } = useMutation({
@@ -209,7 +231,7 @@ export default function CreateMail() {
             </Label>
             <CsvUploader
               uploadedFiles={uploadedFiles}
-              onUploadAccepted={handleOnUploadAccepted}
+              onUploadAccepted={handleCsvUploadAccepted}
               onUploadError={handleOnUploadError}
               onRemoveFile={handleRemoveUploadedFile}
             />

@@ -49,7 +49,7 @@ export const useMailRecipients = (
   );
 
   const handleOnUploadAccepted = useCallback(
-    (results: ParseResult<string[]>, file: File) => {
+    (results: ParseResult<string[]>, file: File): void => {
       const data = results.data;
       const parsedUsers = data
         .slice(1)
@@ -64,7 +64,11 @@ export const useMailRecipients = (
           return acc;
         }, []);
 
-      if (parsedUsers.length === 0) return;
+      if (parsedUsers.length === 0) {
+        throw new Error(
+          '파일 형식이 올바르지 않거나 유효한 데이터가 없습니다.',
+        );
+      }
 
       setUploadedFiles((prev) => [
         ...prev,

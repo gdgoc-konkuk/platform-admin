@@ -20,6 +20,18 @@ export function CsvUploader({
 }: CsvUploaderProps) {
   const { CSVReader } = useCSVReader();
 
+  const handleDownloadExample = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,name,email\n홍길동,hong@example.com\n김구글,kim@example.com';
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'example_recipients.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="py-4">
       <CSVReader
@@ -29,13 +41,20 @@ export function CsvUploader({
         config={{ header: false, skipEmptyLines: true }}
       >
         {({ getRootProps }: any) => (
-          <div>
+          <div className="flex flex-1 flex-row gap-4">
             <Button
               type="button"
               {...getRootProps()}
               className="px-4 py-3 text-white"
             >
               CSV 업로드
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDownloadExample}
+              className="px-4 py-3"
+            >
+              예시 파일 다운로드
             </Button>
           </div>
         )}

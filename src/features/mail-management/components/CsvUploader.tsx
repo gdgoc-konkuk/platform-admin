@@ -21,7 +21,7 @@ export function CsvUploader({
   const { CSVReader } = useCSVReader();
 
   return (
-    <div>
+    <div className="py-4">
       <CSVReader
         onUploadAccepted={onUploadAccepted}
         onUploadError={onUploadError}
@@ -33,7 +33,7 @@ export function CsvUploader({
             <Button
               type="button"
               {...getRootProps()}
-              className="h-[50px] w-[160px] px-4 py-3 text-white"
+              className="px-4 py-3 text-white"
             >
               CSV 업로드
             </Button>

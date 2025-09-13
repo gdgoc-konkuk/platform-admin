@@ -3,18 +3,29 @@ import { z } from 'zod';
 import { UseFormSetValue } from 'react-hook-form';
 import { ParseResult } from 'papaparse';
 import { CreateMailFormFields } from '@/features/mail-management/lib/CreateMailFormSchema';
-import { UploadedFile, User } from '@/features/mail-management/types/mail';
+import { MailRecipients, User } from '@/features/mail-management/types/mail';
+import { CsvData } from '@/types/CsvData';
+import { parseCsvData } from '@/utils/csvParser';
 
-const receiverSchema = z.object({
+const receiverSchema: z.ZodType<Omit<User, 'id' | 'isChecked'>> = z.object({
   name: z.string().min(1, 'Name is required').trim(),
   email: z.string().email('Invalid email format').trim(),
 });
+
+const mailRecipientTransform = (row: string[]) => {
+  if (row.length >= 2) {
+    return { name: row[0], email: row[1] };
+  }
+  return null;
+};
 
 export const useMailRecipients = (
   setValue: UseFormSetValue<CreateMailFormFields>,
 ) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<CsvData<MailRecipients>[]>(
+    [],
+  );
   const [isCheckedAll, setIsCheckedAll] = useState(false);
 
   useEffect(() => {
@@ -50,19 +61,11 @@ export const useMailRecipients = (
 
   const handleOnUploadAccepted = useCallback(
     (results: ParseResult<string[]>, file: File): void => {
-      const data = results.data;
-      const parsedUsers = data
-        .slice(1)
-        .reduce<Omit<User, 'id' | 'isChecked'>[]>((acc, row) => {
-          if (row.length >= 2 && row[0] && row[1]) {
-            const candidate = { name: row[0].trim(), email: row[1].trim() };
-            const parsed = receiverSchema.safeParse(candidate);
-            if (parsed.success) {
-              acc.push(parsed.data);
-            }
-          }
-          return acc;
-        }, []);
+      const parsedUsers = parseCsvData(
+        results,
+        receiverSchema,
+        mailRecipientTransform,
+      );
 
       if (parsedUsers.length === 0) {
         throw new Error(
@@ -72,7 +75,7 @@ export const useMailRecipients = (
 
       setUploadedFiles((prev) => [
         ...prev,
-        { file, id: prev.length + 1, users: parsedUsers },
+        { id: prev.length + 1, file, data: { users: parsedUsers } },
       ]);
 
       setUsers((currentUsers) => mergeUsers(currentUsers, parsedUsers));
@@ -82,11 +85,9 @@ export const useMailRecipients = (
 
   const handleRemoveUploadedFile = useCallback(
     (fileId: number) => {
-      let usersFromFileToRemove: Omit<User, 'id' | 'isChecked'>[] = [];
       const fileToRemove = uploadedFiles.find((f) => f.id === fileId);
-      if (fileToRemove) {
-        usersFromFileToRemove = fileToRemove.users;
-      }
+      const usersFromFileToRemove = fileToRemove?.data.users ?? [];
+
       const usersFromFileToRemoveSet = new Set(
         usersFromFileToRemove.map((u) => u.email.toLowerCase()),
       );

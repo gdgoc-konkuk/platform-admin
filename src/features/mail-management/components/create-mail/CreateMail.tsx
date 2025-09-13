@@ -33,7 +33,7 @@ import { createMail } from '@/features/mail-management/apis/createMail';
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { CsvUploader } from '@/features/mail-management/components/CsvUploader';
+import { CsvUploader } from '@/components/ui/CsvUploader';
 import { useMailRecipients } from '@/features/mail-management/hooks/useMailRecipients';
 import { ParseResult } from 'papaparse';
 
@@ -234,6 +234,8 @@ export default function CreateMail() {
               onUploadAccepted={handleCsvUploadAccepted}
               onUploadError={handleOnUploadError}
               onRemoveFile={handleRemoveUploadedFile}
+              exampleFileUrl="/csvs/mail_example.csv"
+              exampleFileName="mail_recipients_example.csv"
             />
           </div>
 

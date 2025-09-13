@@ -34,7 +34,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMail } from '@/features/mail-management/apis/getMail';
-import { CsvUploader } from '@/features/mail-management/components/CsvUploader';
+import { CsvUploader } from '@/components/ui/CsvUploader';
 import { useMailRecipients } from '@/features/mail-management/hooks/useMailRecipients';
 import { User } from '@/features/mail-management/types/mail';
 
@@ -164,7 +164,10 @@ export default function EditMail() {
       >
         <h1 className="font-nanum text-[24px]">메일 전송 관리</h1>
 
-        <Button className="h-[50px] w-[86px] self-end px-[28px] py-3 text-white" type="button">
+        <Button
+          className="h-[50px] w-[86px] self-end px-[28px] py-3 text-white"
+          type="button"
+        >
           저장
         </Button>
 
@@ -251,6 +254,8 @@ export default function EditMail() {
               onUploadAccepted={handleOnUploadAccepted}
               onUploadError={handleOnUploadError}
               onRemoveFile={handleRemoveUploadedFile}
+              exampleFileUrl="/csvs/mail_example.csv"
+              exampleFileName="mail_recipients_example.csv"
             />
           </div>
 
@@ -371,7 +376,7 @@ export default function EditMail() {
             {methods.formState.errors.recieverInfos && (
               <p className="text-sm text-red-500">
                 이름 또는 이메일 형식이 올바르지 않은 사람이 존재합니다.
-            </p>
+              </p>
             )}
           </div>
 
@@ -417,7 +422,7 @@ export default function EditMail() {
             {methods.formState.errors.content && (
               <p className="text-sm text-red-500">
                 {methods.formState.errors.content.message}
-            </p>
+              </p>
             )}
           </div>
         </div>

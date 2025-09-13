@@ -100,13 +100,13 @@ export const handlers = [
       message: 'SUCCESS',
       data: [
         {
-          batch: "25-26",
-          department: "사회환경공학",
-          email: "kjhwan0802@gmail.com",
+          batch: '25-26',
+          department: '사회환경공학',
+          email: 'kjhwan0802@gmail.com',
           memberId: 20,
-          name: "김지환",
-          role: "ROLE_CORE",
-          studentId: "201911560",
+          name: '김지환',
+          role: 'ROLE_CORE',
+          studentId: '201911560',
         },
       ],
       success: true,
@@ -116,6 +116,16 @@ export const handlers = [
   http.patch(`${BASE_URL}/members/25-26`, async ({ request }) => {
     const body = await request.json();
     console.log('[MSW] intercepted: PATCH /members/25-26', body);
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      success: true,
+    });
+  }),
+
+  //현재 서버 실제 api가 아닌 임시 mock api
+  http.post(`${BASE_URL}/members/25-26`, async ({ request }) => {
+    const body = await request.json();
+    console.log('[MSW] intercepted: POST /members/25-26', body);
     return HttpResponse.json({
       message: 'SUCCESS',
       success: true,

@@ -1,11 +1,10 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button } from '@/components/ui/button';
+﻿import { Button } from '@/components/ui/button';
 import { ParseResult } from 'papaparse';
 import DeleteIcon from '/icons/delete.svg';
-import { UploadedFile } from '@/features/mail-management/types/mail';
+import { CsvData } from '@/types/CsvData';
 
-interface CsvUploaderProps {
-  uploadedFiles: UploadedFile[];
+interface CsvUploaderProps<T> {
+  uploadedFiles: CsvData<T>[];
   onUploadAccepted: (results: ParseResult<string[]>, file: File) => void;
   onUploadError: () => void;
   onRemoveFile: (fileId: number) => void;
@@ -13,16 +12,17 @@ interface CsvUploaderProps {
   exampleFileName?: string;
 }
 
-export function CsvUploader({
+export function CsvUploader<T>({
   uploadedFiles,
   onUploadAccepted,
   onUploadError,
   onRemoveFile,
   exampleFileUrl,
   exampleFileName,
-}: CsvUploaderProps) {
+}: CsvUploaderProps<T>) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
     import('papaparse').then(({ default: Papa }) => {
       Papa.parse(file, {

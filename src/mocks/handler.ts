@@ -94,4 +94,31 @@ export const handlers = [
       success: true,
     });
   }),
+
+  http.get(`${BASE_URL}/members/25-26`, () => {
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: [
+        {
+          batch: "25-26",
+          department: "사회환경공학",
+          email: "kjhwan0802@gmail.com",
+          memberId: 20,
+          name: "김지환",
+          role: "ROLE_CORE",
+          studentId: "201911560",
+        },
+      ],
+      success: true,
+    });
+  }),
+
+  http.patch(`${BASE_URL}/members/25-26`, async ({ request }) => {
+    const body = await request.json();
+    console.log('[MSW] intercepted: PATCH /members/25-26', body);
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      success: true,
+    });
+  }),
 ];

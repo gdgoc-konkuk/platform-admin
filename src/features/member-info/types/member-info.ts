@@ -13,3 +13,7 @@ export interface ResponseData {
   data: MemberInfo[];
   success: boolean;
 }
+
+export interface MemberList {
+  members: Omit<MemberInfo, 'id' | 'isChecked'>[];
+}

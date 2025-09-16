@@ -15,6 +15,8 @@ import { InfoEditDialog } from './InfoEditDialog';
 import { CsvUploader } from '@/components/ui/CsvUploader';
 import { useMemberUploader } from '../hooks/useMemberUploader';
 import { instance } from '@/lib/instance';
+import { InfoAddDialog } from './InfoAddDialog';
+import { InfoDeleteDialog } from './InfoDeleteDialog';
 
 export function MemberInfo() {
   const queryClient = useQueryClient();
@@ -146,7 +148,9 @@ export function MemberInfo() {
           </Table>
         </div>
       )}
-
+      <div>
+        <InfoAddDialog />
+      </div>
       <div className="mt-8">
         <h2 className="text-xl font-bold mb-4">현재 멤버 목록</h2>
         <Table>
@@ -172,7 +176,10 @@ export function MemberInfo() {
                 <TableCell>{info.batch}</TableCell>
                 <TableCell>{info.role}</TableCell>
                 <TableCell>
-                  <InfoEditDialog info={info} />
+                  <div className="flex gap-2">
+                    <InfoEditDialog info={info} />
+                    <InfoDeleteDialog memberId={info.memberId} />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

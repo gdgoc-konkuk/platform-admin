@@ -1,2 +1,2 @@
-﻿memberId,studentId,name,email,department,batch,role
-01,201912345,홍길동,hong@gmail.com,컴퓨터공학,25-26,ROLE_CORE
+﻿studentId,name,email,department,batch,role
+201912345,홍길동,hong@gmail.com,컴퓨터공학,25-26,ROLE_CORE

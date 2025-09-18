@@ -17,3 +17,5 @@ export interface ResponseData {
 export interface MemberList {
   members: Omit<MemberInfo, 'id' | 'isChecked'>[];
 }
+
+export type MemberFormData = Omit<MemberInfo, 'memberId'>;

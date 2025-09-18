@@ -76,7 +76,7 @@ export function MemberForm({ formData, onFormChange }: MemberFormProps) {
           value={formData.batch}
           onValueChange={(value) => handleSelectChange('batch', value)}
         >
-          <SelectTrigger className="w-full bg-gray-100">
+          <SelectTrigger id="batch" className="w-full bg-gray-100">
             <SelectValue placeholder="기수를 선택하세요" />
           </SelectTrigger>
           <SelectContent>
@@ -88,7 +88,7 @@ export function MemberForm({ formData, onFormChange }: MemberFormProps) {
           </SelectContent>
         </Select>
       </div>
-      
+
       <div>
         <Label htmlFor="role">역할</Label>
         <Select
@@ -96,7 +96,7 @@ export function MemberForm({ formData, onFormChange }: MemberFormProps) {
           value={formData.role}
           onValueChange={(value) => handleSelectChange('role', value)}
         >
-          <SelectTrigger className="w-full bg-gray-100">
+          <SelectTrigger id="role" className="w-full bg-gray-100">
             <SelectValue placeholder="역할을 선택하세요" />
           </SelectTrigger>
           <SelectContent>

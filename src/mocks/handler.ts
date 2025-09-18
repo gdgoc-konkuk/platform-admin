@@ -1,6 +1,9 @@
 ﻿import { http, HttpResponse } from 'msw';
+import { MemberInfo } from '@/features/member-info/types/member-info';
+import { mockMembers } from '@/mocks/db';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+let nextId = mockMembers.length + 1;
 
 export const handlers = [
   http.get(`${BASE_URL}/attendances`, ({ request }) => {
@@ -96,36 +99,83 @@ export const handlers = [
   }),
 
   http.get(`${BASE_URL}/members/25-26`, () => {
+    console.log('MSW: Fetched all members');
     return HttpResponse.json({
       message: 'SUCCESS',
-      data: [
-        {
-          batch: '25-26',
-          department: '사회환경공학',
-          email: 'kjhwan0802@gmail.com',
-          memberId: 20,
-          name: '김지환',
-          role: 'ROLE_CORE',
-          studentId: '201911560',
-        },
-      ],
-      success: true,
+      data: mockMembers,
+      success: true, 
     });
   }),
 
-  http.patch(`${BASE_URL}/members/25-26`, async ({ request }) => {
-    const body = await request.json();
-    console.log('[MSW] intercepted: PATCH /members/25-26', body);
-    return HttpResponse.json({
-      message: 'SUCCESS',
-      success: true,
-    });
-  }),
-
-  //현재 서버 실제 api가 아닌 임시 mock api
   http.post(`${BASE_URL}/members/25-26`, async ({ request }) => {
-    const body = await request.json();
-    console.log('[MSW] intercepted: POST /members/25-26', body);
+    const newMemberInfo = (await request.json()) as MemberInfo;
+
+    console.log('MSW: Member added', newMemberInfo);
+    mockMembers.push({ ...newMemberInfo, memberId: nextId++ });
+
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: newMemberInfo,
+      success: true, 
+    });
+  }),
+
+  http.post(`${BASE_URL}/members/bulk`, async ({ request }) => {
+    const newMemberInfos = (await request.json()) as MemberInfo[];
+
+    console.log('MSW: Bulk members added', newMemberInfos);
+    newMemberInfos.forEach((info) => {
+      const newMember = { ...info };
+      mockMembers.push(newMember);
+    });
+
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: newMemberInfos,
+      success: true,
+    });
+  }),
+
+  http.patch(`${BASE_URL}/members/:memberId`, async ({ request, params }) => {
+    const { memberId } = params;
+    const updates = (await request.json()) as Partial<MemberInfo>;
+    const memberIndex = mockMembers.findIndex(
+      (m) => m.memberId === Number(memberId),
+    );
+
+    if (memberIndex === -1) {
+      return HttpResponse.json(
+        { message: 'Member not found' },
+        { status: 404 },
+      );
+    }
+
+    mockMembers[memberIndex] = { ...mockMembers[memberIndex], ...updates };
+
+    console.log('MSW: Member updated', mockMembers[memberIndex]);
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: mockMembers[memberIndex],
+      success: true,
+    });
+  }),
+
+  http.delete(`${BASE_URL}/members/25-26/:memberId`, ({ params }) => {
+    const { memberId } = params;
+    const memberIndex = mockMembers.findIndex(
+      (m) => m.memberId === Number(memberId),
+    );
+
+    if (memberIndex === -1) {
+      return HttpResponse.json(
+        { message: 'Member not found' },
+        { status: 404 },
+      );
+    }
+
+    const [deletedMember] = mockMembers.splice(memberIndex, 1);
+
+    console.log('MSW: Member deleted', deletedMember);
     return HttpResponse.json({
       message: 'SUCCESS',
       success: true,

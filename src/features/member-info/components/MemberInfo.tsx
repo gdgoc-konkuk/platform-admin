@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { ParseResult } from 'papaparse';
 import {
   Table,
   TableBody,
@@ -19,6 +21,7 @@ import { bulkAddInfo } from '@/features/member-info/apis/addBulkInfo';
 
 export function MemberInfo() {
   const queryClient = useQueryClient();
+  const [csvError, setCsvError] = useState<string | null>(null);
 
   const { data, error, isLoading } = useQuery<ResponseData>({
     queryKey: ['member-info'],
@@ -50,6 +53,24 @@ export function MemberInfo() {
       alert(`멤버 추가에 실패했습니다: ${err.message}`);
     },
   });
+
+  const handleUploadWrapper = (results: ParseResult<string[]>, file: File) => {
+    try {
+      setCsvError(null);
+      handleOnUploadAccepted(results, file);
+    } catch (err) {
+      if (err instanceof Error) {
+        setCsvError(err.message);
+      } else {
+        setCsvError('알 수 없는 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  const handleRemoveFileWrapper = (fileId: number) => {
+    setCsvError(null);
+    handleRemoveUploadedFile(fileId);
+  };
 
   const handleAddMembers = () => {
     const selectedMembers = members
@@ -88,14 +109,15 @@ export function MemberInfo() {
       </h1>
       <CsvUploader
         uploadedFiles={uploadedFiles}
-        onUploadAccepted={handleOnUploadAccepted}
+        onUploadAccepted={handleUploadWrapper}
         onUploadError={() =>
-          alert('CSV 파싱에 실패했습니다. 파일 형식을 확인해주세요.')
+          setCsvError('CSV 파싱에 실패했습니다. 파일 형식을 확인해주세요.')
         }
-        onRemoveFile={handleRemoveUploadedFile}
+        onRemoveFile={handleRemoveFileWrapper}
         exampleFileUrl="/csvs/member_example.csv"
         exampleFileName="member_add_example.csv"
       />
+      {csvError && <p className="mt-2 text-sm text-destructive">{csvError}</p>}
       {members.length > 0 && (
         <div className="mt-8 border rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">

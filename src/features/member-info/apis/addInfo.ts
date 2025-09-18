@@ -1,6 +1,6 @@
 ﻿import { instance } from '@/lib/instance';
-import { MemberInfo } from '@/features/member-info/types/member-info';
+import { MemberFormData } from '@/features/member-info/types/member-info';
 
-export function addInfo(info: MemberInfo) {
+export function addInfo(info: MemberFormData) {
   return instance.post('/members', info);
 }

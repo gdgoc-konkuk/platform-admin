@@ -1,6 +1,6 @@
 ﻿import { instance } from '@/lib/instance';
-import { MemberInfo } from '@/features/member-info/types/member-info';
+import { MemberFormData } from '@/features/member-info/types/member-info';
 
-export function bulkAddInfo(infos: MemberInfo[]) {
+export function bulkAddInfo(infos: MemberFormData[]) {
   return instance.post('/members/bulk', infos);
 }

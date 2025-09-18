@@ -1,14 +1,13 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
 import { ParseResult } from 'papaparse';
 import {
-  MemberInfo,
+  MemberFormData,
   MemberList,
 } from '@/features/member-info/types/member-info';
 import { z } from 'zod';
 import { CsvData } from '@/types/CsvData';
 
 const memberSchema = z.object({
-  memberId: z.coerce.number(),
   studentId: z.string().min(1),
   name: z.string().min(1),
   email: z.string().email(),
@@ -17,7 +16,7 @@ const memberSchema = z.object({
   role: z.string().min(1),
 });
 
-export type MemberWithCheck = MemberInfo & { isChecked: boolean };
+export type MemberWithCheck = MemberFormData & { isChecked: boolean };
 
 export const useMemberCsvUploader = () => {
   const [members, setMembers] = useState<MemberWithCheck[]>([]);
@@ -35,10 +34,7 @@ export const useMemberCsvUploader = () => {
   }, [members]);
 
   const mergeMembers = useCallback(
-    (
-      current: MemberWithCheck[],
-      incoming: MemberInfo[],
-    ) => {
+    (current: MemberWithCheck[], incoming: MemberFormData[]) => {
       const set = new Set(current.map((m) => m.studentId));
       const combined = [...current];
       incoming.forEach((m) => {
@@ -55,18 +51,17 @@ export const useMemberCsvUploader = () => {
   const handleOnUploadAccepted = useCallback(
     (results: ParseResult<string[]>, file: File) => {
       const [, ...rows] = results.data;
-      const parsedMembers: MemberInfo[] = [];
+      const parsedMembers: MemberFormData[] = [];
 
       rows.forEach((row) => {
-        if (row.length < 7) return;
+        if (row.length < 6) return;
         const candidate = {
-          memberId: Number(row[0]),
-          studentId: row[1],
-          name: row[2],
-          email: row[3],
-          department: row[4],
-          batch: row[5],
-          role: row[6],
+          studentId: row[0],
+          name: row[1],
+          email: row[2],
+          department: row[3],
+          batch: row[4],
+          role: row[5],
         };
         const parsed = memberSchema.safeParse(candidate);
         if (parsed.success) {
@@ -102,12 +97,10 @@ export const useMemberCsvUploader = () => {
     [uploadedFiles],
   );
 
-  const toggleMemberChecked = useCallback((memberId: number) => {
+  const toggleMemberChecked = useCallback((studentId: string) => {
     setMembers((current) =>
       current.map((m) =>
-        m.memberId === memberId
-          ? { ...m, isChecked: !m.isChecked }
-          : m,
+        m.studentId === studentId ? { ...m, isChecked: !m.isChecked } : m,
       ),
     );
   }, []);

@@ -46,7 +46,7 @@ export function MemberInfo() {
       alert('성공적으로 추가되었습니다!');
     },
     onError: (err) => {
-  
+      
       alert(`멤버 추가에 실패했습니다: ${err.message}`);
     },
   });
@@ -54,7 +54,14 @@ export function MemberInfo() {
   const handleAddMembers = () => {
     const selectedMembers = members
       .filter((m) => m.isChecked)
-      .map(({...rest }) => rest);
+      .map((m) => ({
+        studentId: m.studentId,
+        name: m.name,
+        email: m.email,
+        department: m.department,
+        batch: m.batch,
+        role: m.role,
+      }));
 
     if (selectedMembers.length === 0) {
       alert('추가할 멤버를 선택해주세요.');
@@ -130,7 +137,7 @@ export function MemberInfo() {
                     <input
                       type="checkbox"
                       checked={member.isChecked}
-                      onChange={() => toggleMemberChecked(member.memberId)}
+                      onChange={() => toggleMemberChecked(member.studentId)}
                     />
                   </TableCell>
                   <TableCell>{member.name}</TableCell>

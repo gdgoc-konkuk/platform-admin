@@ -1,5 +1,5 @@
 ﻿import { http, HttpResponse } from 'msw';
-import { MemberInfo } from '@/features/member-info/types/member-info';
+import { MemberFormData, MemberInfo } from '@/features/member-info/types/member-info';
 import { mockMembers } from '@/mocks/db';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -103,12 +103,12 @@ export const handlers = [
     return HttpResponse.json({
       message: 'SUCCESS',
       data: mockMembers,
-      success: true, 
+      success: true,
     });
   }),
 
-  http.post(`${BASE_URL}/members/25-26`, async ({ request }) => {
-    const newMemberInfo = (await request.json()) as MemberInfo;
+  http.post(`${BASE_URL}/members`, async ({ request }) => {
+    const newMemberInfo = (await request.json()) as MemberFormData;
 
     console.log('MSW: Member added', newMemberInfo);
     mockMembers.push({ ...newMemberInfo, memberId: nextId++ });
@@ -116,17 +116,18 @@ export const handlers = [
     return HttpResponse.json({
       message: 'SUCCESS',
       data: newMemberInfo,
-      success: true, 
+      success: true,
     });
   }),
 
   http.post(`${BASE_URL}/members/bulk`, async ({ request }) => {
-    const newMemberInfos = (await request.json()) as MemberInfo[];
+    const newMemberInfos = (await request.json()) as MemberFormData[];
 
     console.log('MSW: Bulk members added', newMemberInfos);
+
     newMemberInfos.forEach((info) => {
       const newMember = { ...info };
-      mockMembers.push(newMember);
+      mockMembers.push({ ...newMember, memberId: nextId++ });
     });
 
     return HttpResponse.json({
@@ -136,19 +137,12 @@ export const handlers = [
     });
   }),
 
-  http.patch(`${BASE_URL}/members/:memberId`, async ({ request, params }) => {
+  http.patch(`${BASE_URL}/members/25-26`, async ({ request, params }) => {
     const { memberId } = params;
     const updates = (await request.json()) as Partial<MemberInfo>;
     const memberIndex = mockMembers.findIndex(
       (m) => m.memberId === Number(memberId),
     );
-
-    if (memberIndex === -1) {
-      return HttpResponse.json(
-        { message: 'Member not found' },
-        { status: 404 },
-      );
-    }
 
     mockMembers[memberIndex] = { ...mockMembers[memberIndex], ...updates };
 

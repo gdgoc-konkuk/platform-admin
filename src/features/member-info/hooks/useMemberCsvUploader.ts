@@ -121,6 +121,11 @@ export const useMemberCsvUploader = () => {
     setMembers((current) => current.filter((m) => !m.isChecked));
   }, []);
 
+  const clearUploadedFiles = () => {
+    setUploadedFiles([]);
+    setMembers([]);
+  };
+
   return {
     members,
     uploadedFiles,
@@ -130,5 +135,6 @@ export const useMemberCsvUploader = () => {
     toggleMemberChecked,
     toggleAllChecked,
     removeSelectedMembers,
+    clearUploadedFiles,
   };
 };

@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getInfos } from '@/features/member-info/apis/getInfos';
 import {
   Table,
   TableBody,
@@ -12,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { instance } from '@/lib/instance';
 import { CsvUploader } from '@/components/ui/CsvUploader';
+import { getInfos } from '@/features/member-info/apis/getInfos';
 import { useMemberCsvUploader } from '@/features/member-info/hooks/useMemberCsvUploader';
 import { InfoActionDialog } from '@/features/member-info/components/InfoActionDialog';
 import { InfoDeleteDialog } from '@/features/member-info/components/InfoDeleteDialog';
@@ -34,6 +34,7 @@ export function MemberInfo() {
     toggleMemberChecked,
     toggleAllChecked,
     removeSelectedMembers,
+    clearUploadedFiles,
   } = useMemberCsvUploader();
 
   const addMembersMutation = useMutation({
@@ -45,6 +46,7 @@ export function MemberInfo() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['member-info'] });
       removeSelectedMembers();
+      clearUploadedFiles();
       alert('성공적으로 추가되었습니다!');
     },
     onError: (err) => {
@@ -147,7 +149,7 @@ export function MemberInfo() {
           </Table>
         </div>
       )}
-      <div>
+      <div className="mt-8">
         <InfoActionDialog mode="add" trigger={<Button>멤버 추가</Button>} />
       </div>
       <div className="mt-8">

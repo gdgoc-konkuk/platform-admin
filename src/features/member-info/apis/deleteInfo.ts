@@ -1,5 +1,6 @@
-﻿import { instance } from '@/lib/instance';
+﻿import { CURRENT_BATCH } from '@/lib/constants';
+import { instance } from '@/lib/instance';
 
 export function deleteInfo(memberId: number) {
-  return instance.delete(`/members/25-26/${memberId}`);
+  return instance.delete(`/members/${CURRENT_BATCH}/${memberId}`);
 }

@@ -1,6 +1,7 @@
 ﻿import { http, HttpResponse } from 'msw';
 import { MemberFormData, MemberInfo } from '@/features/member-info/types/member-info';
 import { mockMembers } from '@/mocks/db';
+import { CURRENT_BATCH } from '@/lib/constants';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 let nextId = mockMembers.length + 1;
@@ -98,7 +99,7 @@ export const handlers = [
     });
   }),
 
-  http.get(`${BASE_URL}/members/25-26`, () => {
+  http.get(`${BASE_URL}/members/${CURRENT_BATCH}`, () => {
     console.log('MSW: Fetched all members');
     return HttpResponse.json({
       message: 'SUCCESS',
@@ -137,42 +138,48 @@ export const handlers = [
     });
   }),
 
-  http.patch(`${BASE_URL}/members/25-26`, async ({ request, params }) => {
-    const { memberId } = params;
-    const updates = (await request.json()) as Partial<MemberInfo>;
-    const memberIndex = mockMembers.findIndex(
-      (m) => m.memberId === Number(memberId),
-    );
-
-    mockMembers[memberIndex] = { ...mockMembers[memberIndex], ...updates };
-
-    console.log('MSW: Member updated', mockMembers[memberIndex]);
-    return HttpResponse.json({
-      message: 'SUCCESS',
-      data: mockMembers[memberIndex],
-      success: true,
-    });
-  }),
-
-  http.delete(`${BASE_URL}/members/25-26/:memberId`, ({ params }) => {
-    const { memberId } = params;
-    const memberIndex = mockMembers.findIndex(
-      (m) => m.memberId === Number(memberId),
-    );
-
-    if (memberIndex === -1) {
-      return HttpResponse.json(
-        { message: 'Member not found' },
-        { status: 404 },
+  http.patch(
+    `${BASE_URL}/members/${CURRENT_BATCH}`,
+    async ({ request, params }) => {
+      const { memberId } = params;
+      const updates = (await request.json()) as Partial<MemberInfo>;
+      const memberIndex = mockMembers.findIndex(
+        (m) => m.memberId === Number(memberId),
       );
-    }
 
-    const [deletedMember] = mockMembers.splice(memberIndex, 1);
+      mockMembers[memberIndex] = { ...mockMembers[memberIndex], ...updates };
 
-    console.log('MSW: Member deleted', deletedMember);
-    return HttpResponse.json({
-      message: 'SUCCESS',
-      success: true,
-    });
-  }),
+      console.log('MSW: Member updated', mockMembers[memberIndex]);
+      return HttpResponse.json({
+        message: 'SUCCESS',
+        data: mockMembers[memberIndex],
+        success: true,
+      });
+    },
+  ),
+
+  http.delete(
+    `${BASE_URL}/members/${CURRENT_BATCH}/:memberId`,
+    ({ params }) => {
+      const { memberId } = params;
+      const memberIndex = mockMembers.findIndex(
+        (m) => m.memberId === Number(memberId),
+      );
+
+      if (memberIndex === -1) {
+        return HttpResponse.json(
+          { message: 'Member not found' },
+          { status: 404 },
+        );
+      }
+
+      const [deletedMember] = mockMembers.splice(memberIndex, 1);
+
+      console.log('MSW: Member deleted', deletedMember);
+      return HttpResponse.json({
+        message: 'SUCCESS',
+        success: true,
+      });
+    },
+  ),
 ];

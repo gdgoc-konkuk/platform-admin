@@ -63,7 +63,11 @@ export function useMemberForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (Object.values(formData).some((value) => !value.trim())) {
+    if (
+      Object.values(formData).some(
+        (value) => typeof value !== 'string' || !value.trim(),
+      )
+    ) {
       setError('모든 필드를 입력해주세요.');
       return;
     }
@@ -71,8 +75,8 @@ export function useMemberForm({
   };
 
   useEffect(() => {
-    if (error) setError('');
-  }, [formData, error]);
+    setError('');
+  }, [formData]);
 
   return {
     formData,

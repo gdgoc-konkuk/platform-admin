@@ -9,13 +9,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { instance } from '@/lib/instance';
 import { CsvUploader } from '@/components/ui/CsvUploader';
 import { getInfos } from '@/features/member-info/apis/getInfos';
 import { useMemberCsvUploader } from '@/features/member-info/hooks/useMemberCsvUploader';
 import { InfoActionDialog } from '@/features/member-info/components/InfoActionDialog';
 import { InfoDeleteDialog } from '@/features/member-info/components/InfoDeleteDialog';
 import { type MemberInfo, ResponseData } from '@/features/member-info/types/member-info';
+import { bulkAddInfo } from '@/features/member-info/apis/addBulkInfo';
 
 export function MemberInfo() {
   const queryClient = useQueryClient();
@@ -38,11 +38,7 @@ export function MemberInfo() {
   } = useMemberCsvUploader();
 
   const addMembersMutation = useMutation({
-    mutationFn: (newMembers: MemberInfo[]) => {
-      return instance.post('/members/25-26', {
-        memberAddInfoList: newMembers,
-      });
-    },
+    mutationFn: bulkAddInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['member-info'] });
       removeSelectedMembers();

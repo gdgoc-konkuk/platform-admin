@@ -1,13 +1,13 @@
 ﻿import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { instance } from '@/lib/instance';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { deleteInfo } from '@/features/member-info/apis/deleteInfo';
 
 export function InfoDeleteDialog({ memberId }: { memberId: number }) {
   const queryClient = useQueryClient();
 
   const deleteMemberMutation = useMutation({
-    mutationFn: () => instance.delete(`/members/${memberId}`),
+    mutationFn: () => deleteInfo(memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['member-info'] });
       alert('삭제되었습니다!');

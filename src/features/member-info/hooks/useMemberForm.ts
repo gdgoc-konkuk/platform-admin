@@ -1,8 +1,9 @@
 ﻿import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
-import { instance } from '@/lib/instance';
 import { MemberFormData, MemberInfo } from '@/features/member-info/types/member-info';
+import { addInfo } from '@/features/member-info/apis/addInfo';
+import { editInfo } from '@/features/member-info/apis/editInfo';
 
 interface UseMemberFormProps {
   mode: 'add' | 'edit';
@@ -33,8 +34,22 @@ export function useMemberForm({
 
   const mutationFn =
     mode === 'add'
-      ? () => instance.post('/members/25-26', { memberAddInfoList: [formData] })
-      : () => instance.put(`/members/${initialData?.memberId}`, formData);
+      ? () => {
+        const memberData: MemberFormData = {
+          ...formData,
+        };
+        return addInfo(memberData);
+      }
+      : () => {
+          if (!initialData?.memberId) {
+            throw new Error('수정할 멤버의 ID가 없습니다.');
+          }
+          const memberDataWithId = {
+            ...formData,
+            memberId: initialData.memberId,
+          };
+          return editInfo(memberDataWithId);
+        };
 
   const { mutate, isPending } = useMutation({
     mutationFn,
@@ -64,6 +79,7 @@ export function useMemberForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (
+      mode === 'add' &&
       Object.values(formData).some(
         (value) => typeof value !== 'string' || !value.trim(),
       )

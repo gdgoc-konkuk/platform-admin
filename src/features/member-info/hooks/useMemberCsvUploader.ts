@@ -1,6 +1,9 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
 import { ParseResult } from 'papaparse';
-import { MemberInfo, MemberList } from '../types/member-info';
+import {
+  MemberInfo,
+  MemberList,
+} from '@/features/member-info/types/member-info';
 import { z } from 'zod';
 import { CsvData } from '@/types/CsvData';
 
@@ -16,7 +19,7 @@ const memberSchema = z.object({
 
 export type MemberWithCheck = MemberInfo & { isChecked: boolean };
 
-export const useMemberUploader = () => {
+export const useMemberCsvUploader = () => {
   const [members, setMembers] = useState<MemberWithCheck[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<
     CsvData<MemberList>[]

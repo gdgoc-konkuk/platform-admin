@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getInfos } from '../apis/getInfos';
+import { getInfos } from '@/features/member-info/apis/getInfos';
 import {
   Table,
   TableBody,
@@ -10,13 +10,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { type MemberInfo, ResponseData } from '../types/member-info';
-import { InfoEditDialog } from './InfoEditDialog';
-import { CsvUploader } from '@/components/ui/CsvUploader';
-import { useMemberUploader } from '../hooks/useMemberUploader';
 import { instance } from '@/lib/instance';
-import { InfoAddDialog } from './InfoAddDialog';
-import { InfoDeleteDialog } from './InfoDeleteDialog';
+import { CsvUploader } from '@/components/ui/CsvUploader';
+import { useMemberCsvUploader } from '@/features/member-info/hooks/useMemberCsvUploader';
+import { InfoActionDialog } from '@/features/member-info/components/InfoActionDialog';
+import { InfoDeleteDialog } from '@/features/member-info/components/InfoDeleteDialog';
+import { type MemberInfo, ResponseData } from '@/features/member-info/types/member-info';
 
 export function MemberInfo() {
   const queryClient = useQueryClient();
@@ -35,7 +34,7 @@ export function MemberInfo() {
     toggleMemberChecked,
     toggleAllChecked,
     removeSelectedMembers,
-  } = useMemberUploader();
+  } = useMemberCsvUploader();
 
   const addMembersMutation = useMutation({
     mutationFn: (newMembers: MemberInfo[]) => {
@@ -149,7 +148,7 @@ export function MemberInfo() {
         </div>
       )}
       <div>
-        <InfoAddDialog />
+        <InfoActionDialog mode="add" trigger={<Button>멤버 추가</Button>} />
       </div>
       <div className="mt-8">
         <h2 className="text-xl font-bold mb-4">현재 멤버 목록</h2>
@@ -177,7 +176,11 @@ export function MemberInfo() {
                 <TableCell>{info.role}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <InfoEditDialog info={info} />
+                    <InfoActionDialog
+                      mode="edit"
+                      memberInfo={info}
+                      trigger={<Button>수정</Button>}
+                    />
                     <InfoDeleteDialog memberId={info.memberId} />
                   </div>
                 </TableCell>

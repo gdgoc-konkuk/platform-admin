@@ -64,27 +64,27 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
     <div>
       {error && <ErrorPopup />}
       <div className="fixed inset-0 bg-gray-800 bg-opacity-10 flex justify-center items-center">
-        <div className="w-[70%] h-[100%] relative flex flex-col justify-center items-center bg-[#ffffff] p-4 rounded-[10px] filter drop-shadow-[0px_4px_10px_rgba(0,0,0,0.15)]">
+        <div className="w-[90%] max-w-[600px] h-auto max-h-[90%] overflow-y-auto relative flex flex-col justify-center items-center bg-[#ffffff] p-4 rounded-[10px] filter drop-shadow-[0px_4px_10px_rgba(0,0,0,0.15)]">
           <img
             src={GrayCloseIcon}
             alt="close Modal"
             className="absolute top-4 right-4 leading-none"
             onClick={onClose}
           />
-          <h2 className="top-[78px] left-[60px] absolute font-['NanumSquareRoundEB'] text-[24px] font-extrabold">
+          <h2 className="mt-12 mb-16 font-['NanumSquareRoundEB'] text-[24px] font-extrabold">
             출석 QR 생성
           </h2>
-          <form className="flex flex-col w-[400px] h-[422px] relative">
+          <form className="flex flex-col w-full max-w-[400px] h-auto relative">
             <label
               htmlFor="title"
-              className="mb-[18px] text-[#5C5353] font-Pretendard] text-[17px] font-[600] leading-[1.5] tracking-[0.17px]"
+              className="mb-4 text-[#5C5353] font-Pretendard] text-[17px] font-[600] leading-[1.5] tracking-[0.17px]"
             >
               제목
             </label>
-            <div className="relative w-full mb-[80px]">
+            <div className="relative w-full mb-8">
               <Input
                 id="title"
-                className="w-[400px] h-[50px] rounded-[10px] border-[#DADADA] bg-[#F3F3F3] px-[12px] text-[16px] focus:border-[#b1b1b1]"
+                className="w-full h-12 rounded-[10px] border-[#DADADA] bg-[#F3F3F3] px-[12px] text-[16px] focus:border-[#b1b1b1]"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onFocus={() => {
@@ -103,13 +103,13 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
               <img
                 src={GrayCloseIcon}
                 alt="close"
-                className="absolute right-4 top-[14px] cursor-pointer"
+                className="absolute right-4 top-3 cursor-pointer"
                 onClick={() => setTitle('')}
               />
             </div>
             <label
               htmlFor="number"
-              className="mb-[18px] text-[#5C5353] font-Pretendard] text-[17px] font-[600] leading-[1.5] tracking-[0.17px]"
+              className="mb-4 text-[#5C5353] font-Pretendard] text-[17px] font-[600] leading-[1.5] tracking-[0.17px]"
             >
               총 인원 수
             </label>
@@ -118,7 +118,7 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
                 disabled
                 type="number"
                 id="number"
-                className="w-[400px] h-[50px] rounded-[10px] border-[#DADADA] bg-[#F3F3F3] px-[12px] text-[16px] focus:border-[#b1b1b1]"
+                className="w-full h-[50px] rounded-[10px] border-[#DADADA] bg-[#F3F3F3] px-[12px] text-[16px] focus:border-[#b1b1b1]"
                 value={numberOfPeople.toString()}
                 onChange={(e) => setNumberOfPeople(Number(e.target.value))}
                 onFocus={() => {
@@ -143,7 +143,7 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
             </div>
             <Button
               onClick={(e) => handleSubmit(e)}
-              className="absolute bottom-[0px] right-[0px] px-[28px] py-[14px]"
+              className="mt-12 mb-12 self-end px-8"
             >
               확인
             </Button>

@@ -4,11 +4,15 @@ import { Input } from '@/components/ui/input';
 
 import GrayCloseIcon from '/icons/close-gray.svg';
 
-import { AttendanceData, postNewAttendance } from '../apis/attendanceRequest';
+import {
+  AttendanceData,
+  postNewAttendance,
+} from '@/features/attendance/apis/attendanceRequest';
 import { useMutation } from '@tanstack/react-query';
 import ErrorPopup from '@/components/ui/ErrorPopup';
 
 interface CreateQRModalProps {
+  onClose: () => void;
   closeFirstModalAndOpenSecond: () => void;
   title: string;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
@@ -19,6 +23,7 @@ interface CreateQRModalProps {
 }
 
 export const CreateQRModal: React.FC<CreateQRModalProps> = ({
+  onClose,
   closeFirstModalAndOpenSecond,
   title,
   setTitle,
@@ -60,6 +65,12 @@ export const CreateQRModal: React.FC<CreateQRModalProps> = ({
       {error && <ErrorPopup />}
       <div className="fixed inset-0 bg-gray-800 bg-opacity-10 flex justify-center items-center">
         <div className="w-[70%] h-[100%] relative flex flex-col justify-center items-center bg-[#ffffff] p-4 rounded-[10px] filter drop-shadow-[0px_4px_10px_rgba(0,0,0,0.15)]">
+          <img
+            src={GrayCloseIcon}
+            alt="close Modal"
+            className="absolute top-4 right-4 leading-none"
+            onClick={onClose}
+          />
           <h2 className="top-[78px] left-[60px] absolute font-['NanumSquareRoundEB'] text-[24px] font-extrabold">
             출석 QR 생성
           </h2>

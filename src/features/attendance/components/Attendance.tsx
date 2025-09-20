@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ModalManager } from './ModalManager';
+import { ModalManager } from '@/features/attendance/components/ModalManager';
 import { useQuery } from '@tanstack/react-query';
-import { getAttendances } from '../apis/attendanceRequest';
+import { getAttendances } from '@/features/attendance/apis/attendanceRequest';
 import ErrorPopup from '@/components/ui/ErrorPopup';
 import { cn } from '@/lib/utils';
 
@@ -46,7 +46,7 @@ export default function Attendance() {
   }
 
   const handleDateClick = (date: dayjs.Dayjs) => {
-    if (date.format('YYYY-MM-DD') !== dayjs().format('YYYY-MM-DD')) return;
+    if (!date.isSame(dayjs(), 'month') || !date.isSame(dayjs(), 'day')) return;
     setSelectedDate(date);
   };
 
@@ -122,8 +122,10 @@ export default function Attendance() {
                 <div
                   key={'day' + i}
                   className={cn(
-                    'w-[105px] h-[78px] px-[16px] py-[10px] rounded-[10px] cursor-pointer bg-[#F9F9F9] hover:bg-gray-200 transition duration-300',
-                    i === currentDate.date() - 1 && 'bg-gray-300',
+                    'w-[105px] h-[78px] px-[16px] py-[10px] rounded-[10px] transition duration-300',
+                    currentDate.date(i + 1).isSame(dayjs(), 'day')
+                      ? 'bg-gray-300  cursor-pointer hover:bg-gray-400'
+                      : 'bg-[#F9F9F9] cursor-not-allowed',
                   )}
                   onClick={() => handleDateClick(currentDate.date(i + 1))}
                 >

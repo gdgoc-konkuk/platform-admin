@@ -13,3 +13,9 @@ export interface ResponseData {
   data: MemberInfo[];
   success: boolean;
 }
+
+export type MemberFormData = Omit<MemberInfo, 'memberId'>;
+
+export interface MemberList {
+  members: Omit<MemberFormData, 'id' | 'isChecked'>[];
+}

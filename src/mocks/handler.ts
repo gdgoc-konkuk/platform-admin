@@ -1,6 +1,10 @@
 ﻿import { http, HttpResponse } from 'msw';
+import { MemberFormData, MemberInfo } from '@/features/member-info/types/member-info';
+import { mockMembers } from '@/mocks/db';
+import { CURRENT_BATCH } from '@/lib/constants';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+let nextId = mockMembers.length + 1;
 
 export const handlers = [
   http.get(`${BASE_URL}/attendances`, ({ request }) => {
@@ -94,4 +98,88 @@ export const handlers = [
       success: true,
     });
   }),
+
+  http.get(`${BASE_URL}/members/${CURRENT_BATCH}`, () => {
+    console.log('MSW: Fetched all members');
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: mockMembers,
+      success: true,
+    });
+  }),
+
+  http.post(`${BASE_URL}/members`, async ({ request }) => {
+    const newMemberInfo = (await request.json()) as MemberFormData;
+
+    console.log('MSW: Member added', newMemberInfo);
+    mockMembers.push({ ...newMemberInfo, memberId: nextId++ });
+
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: newMemberInfo,
+      success: true,
+    });
+  }),
+
+  http.post(`${BASE_URL}/members/bulk`, async ({ request }) => {
+    const newMemberInfos = (await request.json()) as MemberFormData[];
+
+    console.log('MSW: Bulk members added', newMemberInfos);
+
+    newMemberInfos.forEach((info) => {
+      const newMember = { ...info };
+      mockMembers.push({ ...newMember, memberId: nextId++ });
+    });
+
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: newMemberInfos,
+      success: true,
+    });
+  }),
+
+  http.patch(
+    `${BASE_URL}/members/${CURRENT_BATCH}`,
+    async ({ request, params }) => {
+      const { memberId } = params;
+      const updates = (await request.json()) as Partial<MemberInfo>;
+      const memberIndex = mockMembers.findIndex(
+        (m) => m.memberId === Number(memberId),
+      );
+
+      mockMembers[memberIndex] = { ...mockMembers[memberIndex], ...updates };
+
+      console.log('MSW: Member updated', mockMembers[memberIndex]);
+      return HttpResponse.json({
+        message: 'SUCCESS',
+        data: mockMembers[memberIndex],
+        success: true,
+      });
+    },
+  ),
+
+  http.delete(
+    `${BASE_URL}/members/${CURRENT_BATCH}/:memberId`,
+    ({ params }) => {
+      const { memberId } = params;
+      const memberIndex = mockMembers.findIndex(
+        (m) => m.memberId === Number(memberId),
+      );
+
+      if (memberIndex === -1) {
+        return HttpResponse.json(
+          { message: 'Member not found' },
+          { status: 404 },
+        );
+      }
+
+      const [deletedMember] = mockMembers.splice(memberIndex, 1);
+
+      console.log('MSW: Member deleted', deletedMember);
+      return HttpResponse.json({
+        message: 'SUCCESS',
+        success: true,
+      });
+    },
+  ),
 ];

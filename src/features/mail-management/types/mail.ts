@@ -20,8 +20,6 @@ export interface User {
   isChecked: boolean;
 }
 
-export interface UploadedFile {
-  file: File;
-  id: number;
+export interface MailRecipients {
   users: Omit<User, 'id' | 'isChecked'>[];
 }

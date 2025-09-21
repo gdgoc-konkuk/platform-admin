@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 
-import { CreateQRModal } from './CreateQRModal';
-import { QRModal } from './QRModal';
+import { CreateQRModal } from '@/features/attendance/components/CreateQRModal';
+import { QRModal } from '@/features/attendance/components/QRModal';
 import { useQuery } from '@tanstack/react-query';
-import { postReAttendance } from '../apis/attendanceRequest';
+import { postReAttendance } from '@/features/attendance/apis/attendanceRequest';
 
 type EventData = {
   attendanceId: number;
@@ -69,6 +69,7 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
     <div>
       {isFirstModalOpen && (
         <CreateQRModal
+          onClose={() => setIsFirstModalOpen(false)}
           closeFirstModalAndOpenSecond={closeFirstModalAndOpenSecond}
           title={title}
           setTitle={setTitle}

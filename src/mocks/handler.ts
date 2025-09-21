@@ -7,6 +7,34 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 let nextId = mockMembers.length + 1;
 
 export const handlers = [
+
+  http.get(`${BASE_URL}/attendances/:year/:month`, ({ params }) => {
+    const { year, month } = params;
+    console.log(`[MSW] intercepted: GET /attendances/${year}/${month}`);
+
+    return HttpResponse.json({
+      message: 'SUCCESS',
+      data: [
+        {
+          attendanceId: 1,
+          title: '9월 1주차 세션 (Mocked)',
+          attendanceTime: '2025-09-02T19:00:00',
+        },
+        {
+          attendanceId: 2,
+          title: '9월 2주차 세션 (Mocked)',
+          attendanceTime: '2025-09-09T18:55:00',
+        },
+        {
+          attendanceId: 3,
+          title: '9월 3주차 세션 (Mocked)',
+          attendanceTime: '2025-09-16T19:10:00',
+        },
+      ],
+      success: true,
+    });
+  }),
+  
   http.get(`${BASE_URL}/attendances`, ({ request }) => {
     const url = new URL(request.url);
     const year = url.searchParams.get('year');

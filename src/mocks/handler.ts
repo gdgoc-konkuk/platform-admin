@@ -46,6 +46,7 @@ export const handlers = [
 
     return HttpResponse.json({
       message: 'SUCCESS',
+      errorCode: null,
       data: [
         {
           attendanceId: 1,
@@ -72,6 +73,7 @@ export const handlers = [
 
     return HttpResponse.json({
       message: 'SUCCESS',
+      errorCode: null,
       data: {
         emailTasks: [
           {
@@ -113,6 +115,7 @@ export const handlers = [
 
     return HttpResponse.json({
       message: 'SUCCESS',
+      errorCode: null,
       data: {
         subject: `테스트메일입니다 (ID: ${id} Mocked)`,
         content:
@@ -131,6 +134,7 @@ export const handlers = [
     console.log('MSW: Fetched all members');
     return HttpResponse.json({
       message: 'SUCCESS',
+      errorCode: null,
       data: mockMembers,
       success: true,
     });
@@ -144,6 +148,7 @@ export const handlers = [
 
     return HttpResponse.json({
       message: 'SUCCESS',
+      errorCode: null,
       data: newMemberInfo,
       success: true,
     });
@@ -151,6 +156,16 @@ export const handlers = [
 
   http.post(`${BASE_URL}/members/bulk`, async ({ request }) => {
     const newMemberInfos = (await request.json()) as MemberFormData[];
+
+    const hasDuplicate = newMemberInfos.some(newInfo =>
+      mockMembers.some(existing => existing.studentId === newInfo.studentId)
+    );
+    if (hasDuplicate) {
+      return HttpResponse.json(
+        { message: '이미 존재하는 학번입니다.', errorCode: 'DUPLICATE_STUDENT_ID', success: false },
+        { status: 400 }
+      );
+    }
 
     console.log('MSW: Bulk members added', newMemberInfos);
 
@@ -161,6 +176,7 @@ export const handlers = [
 
     return HttpResponse.json({
       message: 'SUCCESS',
+      errorCode: null,
       data: newMemberInfos,
       success: true,
     });
@@ -180,6 +196,7 @@ export const handlers = [
       console.log('MSW: Member updated', mockMembers[memberIndex]);
       return HttpResponse.json({
         message: 'SUCCESS',
+        errorCode: null,
         data: mockMembers[memberIndex],
         success: true,
       });
@@ -196,7 +213,7 @@ export const handlers = [
 
       if (memberIndex === -1) {
         return HttpResponse.json(
-          { message: 'Member not found' },
+          { message: 'Member not found', errorCode: 'MEMBER_NOT_FOUND', success: false },
           { status: 404 },
         );
       }
@@ -206,6 +223,7 @@ export const handlers = [
       console.log('MSW: Member deleted', deletedMember);
       return HttpResponse.json({
         message: 'SUCCESS',
+        errorCode: null,
         success: true,
       });
     },

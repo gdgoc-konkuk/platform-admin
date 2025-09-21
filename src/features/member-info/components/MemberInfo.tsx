@@ -18,6 +18,7 @@ import { InfoActionDialog } from '@/features/member-info/components/InfoActionDi
 import { InfoDeleteDialog } from '@/features/member-info/components/InfoDeleteDialog';
 import { type MemberInfo, ResponseData } from '@/features/member-info/types/member-info';
 import { bulkAddInfo } from '@/features/member-info/apis/addBulkInfo';
+import { AxiosError } from 'axios';
 
 export function MemberInfo() {
   const queryClient = useQueryClient();
@@ -48,9 +49,15 @@ export function MemberInfo() {
       clearUploadedFiles();
       alert('성공적으로 추가되었습니다!');
     },
-    onError: (err) => {
-      
-      alert(`멤버 추가에 실패했습니다: ${err.message}`);
+    onError: (err: unknown) => {
+      if (err instanceof AxiosError) {
+        const apiMessage = err.response?.data?.message;
+        alert(apiMessage ?? '멤버 추가에 실패했습니다.');
+      } else if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert('알 수 없는 오류가 발생했습니다.');
+      }
     },
   });
 
